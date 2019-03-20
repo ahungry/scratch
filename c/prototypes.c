@@ -10,12 +10,12 @@ typedef struct Animal {
 
 char* animal_get_noise (void* a) { return ((Animal*) a)->name; }
 void animal_speak (void* a) { printf ("%s\n", (char*) ((Animal*) a)->get_noise (a)); }
-Animal make_animal (char* name)
+Animal* make_animal (char* name)
 {
-  Animal obj;
-  strcpy (obj.name, name);
-  obj.get_noise = &animal_get_noise;
-  obj.speak = &animal_speak;
+  Animal* obj = (Animal*) malloc (sizeof (Animal));
+  strcpy (obj->name, name);
+  obj->get_noise = &animal_get_noise;
+  obj->speak = &animal_speak;
 
   return obj;
 }
@@ -30,10 +30,10 @@ char* dog_get_noise (void* a) {
 
   return noise;
 }
-Dog make_dog (char* name)
+Dog* make_dog (char* name)
 {
-  Animal obj = make_animal (name);
-  obj.get_noise = &dog_get_noise;
+  Animal* obj = make_animal (name);
+  obj->get_noise = &dog_get_noise;
 
   return obj;
 }
@@ -41,11 +41,11 @@ Dog make_dog (char* name)
 int
 main ()
 {
-  Animal a = make_animal ("Matt");
-  a.speak (&a);
+  Animal* a = make_animal ("Matt");
+  a->speak (a);
 
-  Dog d = make_dog ("Fido");
-  d.speak (&d);
+  Dog* d = make_dog ("Fido");
+  d->speak (d);
 
   exit (0);
 }
