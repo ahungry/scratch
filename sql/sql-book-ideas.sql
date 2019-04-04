@@ -6,4 +6,5 @@ PREPARE fooplan (int, text, bool, numeric, text) AS
   , $4 as my_numeric
   , $5::int as cast_int
   ;
+--explain analyze
 EXECUTE fooplan(1, 'Hunter Valley', 't', 200.00, '42');
