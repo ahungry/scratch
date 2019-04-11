@@ -11,13 +11,31 @@ a = 1
 y = 2
 
 [[persons]]
-interests = ["programming", "drawing"]
-name = "Matthew Carter"
+dynamic = []
+interests = ["sleeping"]
+name = "Jon Smith"
 
-[[persons.dynamic]]
-a = 0
+[[points]]
+name = "First point"
 x = 1
+y = 2.3
 
-[[persons.dynamic]]
-a = 1
-y = 2
+[[points]]
+name = "second point"
+x = 3
+y = 4.9
+
+[[points]]
+name = "third point"
+x = 5
+y = 6.0
+
+[[points]]
+name = "fourth point"
+x = 7
+y = 8.32
+
+[[points]]
+name = "fifth point"
+x = 9
+y = 10.1

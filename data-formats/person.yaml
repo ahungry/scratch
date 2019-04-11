@@ -8,12 +8,23 @@ persons:
   - programming
   - drawing
   name: Matthew Carter
-- dynamic:
-  - a: 0
-    x: 1
-  - a: 1
-    y: 2
+- dynamic: []
   interests:
-  - programming
-  - drawing
-  name: Matthew Carter
+  - sleeping
+  name: Jon Smith
+points:
+- name: First point
+  x: 1
+  y: 2.3
+- name: second point
+  x: 3
+  y: 4.9
+- name: third point
+  x: 5
+  y: 6.0
+- name: fourth point
+  x: 7
+  y: 8.32
+- name: fifth point
+  x: 9
+  y: 10.1

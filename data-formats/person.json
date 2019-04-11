@@ -1,38 +1,55 @@
 {
   "persons": [
     {
-      "dynamic": [
-        {
-          "x": 1,
-          "a": 0
-        },
-        {
-          "y": 2,
-          "a": 1
-        }
-      ],
+      "name": "Matthew Carter",
       "interests": [
         "programming",
         "drawing"
       ],
-      "name": "Matthew Carter"
+      "dynamic": [
+        {
+          "a": 0,
+          "x": 1
+        },
+        {
+          "a": 1,
+          "y": 2
+        }
+      ]
     },
     {
-      "dynamic": [
-        {
-          "x": 1,
-          "a": 0
-        },
-        {
-          "y": 2,
-          "a": 1
-        }
-      ],
+      "name": "Jon Smith",
       "interests": [
-        "programming",
-        "drawing"
+        "sleeping"
       ],
-      "name": "Matthew Carter"
+      "dynamic": []
+    }
+  ],
+  "points": [
+    {
+      "name": "First point",
+      "y": 2.3,
+      "x": 1
+    },
+    {
+      "name": "second point",
+      "y": 4.9,
+      "x": 3
+    },
+    {
+      "name": "third point",
+      "y": 6.0,
+      "x": 5
+    },
+    {
+      "name": "fourth point",
+      "y": 8.32,
+      "x": 7
+    },
+    {
+      "name": "fifth point",
+      "y": 10.10,
+      "x": 9
     }
   ]
 }
