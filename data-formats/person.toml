@@ -1,6 +1,7 @@
 [[persons]]
 interests = ["programming", "drawing"]
 name = "Matthew Carter"
+points = []
 
 [[persons.dynamic]]
 a = 0
@@ -14,6 +15,31 @@ y = 2
 dynamic = []
 interests = ["sleeping"]
 name = "Jon Smith"
+
+[[persons.points]]
+name = "First point"
+x = 1
+y = 2.3
+
+[[persons.points]]
+name = "second point"
+x = 3
+y = 4.9
+
+[[persons.points]]
+name = "third point"
+x = 5
+y = 6.0
+
+[[persons.points]]
+name = "fourth point"
+x = 7
+y = 8.32
+
+[[persons.points]]
+name = "fifth point"
+x = 9
+y = 10.1
 
 [[points]]
 name = "First point"
