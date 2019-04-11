@@ -1,0 +1,38 @@
+{
+  "persons": [
+    {
+      "dynamic": [
+        {
+          "x": 1,
+          "a": 0
+        },
+        {
+          "y": 2,
+          "a": 1
+        }
+      ],
+      "interests": [
+        "programming",
+        "drawing"
+      ],
+      "name": "Matthew Carter"
+    },
+    {
+      "dynamic": [
+        {
+          "x": 1,
+          "a": 0
+        },
+        {
+          "y": 2,
+          "a": 1
+        }
+      ],
+      "interests": [
+        "programming",
+        "drawing"
+      ],
+      "name": "Matthew Carter"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+[[persons]]
+interests = ["programming", "drawing"]
+name = "Matthew Carter"
+
+[[persons.dynamic]]
+a = 0
+x = 1
+
+[[persons.dynamic]]
+a = 1
+y = 2
+
+[[persons]]
+interests = ["programming", "drawing"]
+name = "Matthew Carter"
+
+[[persons.dynamic]]
+a = 0
+x = 1
+
+[[persons.dynamic]]
+a = 1
+y = 2

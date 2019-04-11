@@ -1,0 +1,19 @@
+persons:
+- dynamic:
+  - a: 0
+    x: 1
+  - a: 1
+    y: 2
+  interests:
+  - programming
+  - drawing
+  name: Matthew Carter
+- dynamic:
+  - a: 0
+    x: 1
+  - a: 1
+    y: 2
+  interests:
+  - programming
+  - drawing
+  name: Matthew Carter
