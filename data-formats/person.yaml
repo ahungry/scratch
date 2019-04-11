@@ -1,3 +1,14 @@
+http_responses:
+  bad:
+  - code: 404
+    desc: Not Found
+  - code: 503
+    desc: Internal Server Error
+  good:
+  - code: 200
+    desc: OK
+  - code: 204
+    desc: No Content
 persons:
 - dynamic:
   - a: 0

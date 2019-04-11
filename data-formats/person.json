@@ -1,83 +1,105 @@
 {
-  "points": [
-    {
-      "x": 1,
-      "y": 2.3,
-      "name": "First point"
-    },
-    {
-      "x": 3,
-      "y": 4.9,
-      "name": "second point"
-    },
-    {
-      "x": 5,
-      "y": 6.0,
-      "name": "third point"
-    },
-    {
-      "x": 7,
-      "y": 8.32,
-      "name": "fourth point"
-    },
-    {
-      "x": 9,
-      "y": 10.1,
-      "name": "fifth point"
-    }
-  ],
   "persons": [
     {
-      "dynamic": [
-        {
-          "x": 1,
-          "a": 0
-        },
-        {
-          "y": 2,
-          "a": 1
-        }
-      ],
-      "points": [],
+      "name": "Matthew Carter",
       "interests": [
         "programming",
         "drawing"
       ],
-      "name": "Matthew Carter"
+      "points": [],
+      "dynamic": [
+        {
+          "a": 0,
+          "x": 1
+        },
+        {
+          "a": 1,
+          "y": 2
+        }
+      ]
     },
     {
-      "points": [
-        {
-          "x": 1,
-          "y": 2.3,
-          "name": "First point"
-        },
-        {
-          "x": 3,
-          "y": 4.9,
-          "name": "second point"
-        },
-        {
-          "x": 5,
-          "y": 6.0,
-          "name": "third point"
-        },
-        {
-          "x": 7,
-          "y": 8.32,
-          "name": "fourth point"
-        },
-        {
-          "x": 9,
-          "y": 10.1,
-          "name": "fifth point"
-        }
-      ],
-      "dynamic": [],
+      "name": "Jon Smith",
       "interests": [
         "sleeping"
       ],
-      "name": "Jon Smith"
+      "dynamic": [],
+      "points": [
+        {
+          "name": "First point",
+          "y": 2.3,
+          "x": 1
+        },
+        {
+          "name": "second point",
+          "y": 4.9,
+          "x": 3
+        },
+        {
+          "name": "third point",
+          "y": 6.0,
+          "x": 5
+        },
+        {
+          "name": "fourth point",
+          "y": 8.32,
+          "x": 7
+        },
+        {
+          "name": "fifth point",
+          "y": 10.1,
+          "x": 9
+        }
+      ]
     }
-  ]
+  ],
+  "points": [
+    {
+      "name": "First point",
+      "y": 2.3,
+      "x": 1
+    },
+    {
+      "name": "second point",
+      "y": 4.9,
+      "x": 3
+    },
+    {
+      "name": "third point",
+      "y": 6.0,
+      "x": 5
+    },
+    {
+      "name": "fourth point",
+      "y": 8.32,
+      "x": 7
+    },
+    {
+      "name": "fifth point",
+      "y": 10.1,
+      "x": 9
+    }
+  ],
+  "http_responses": {
+    "bad": [
+      {
+        "desc": "Not Found",
+        "code": 404
+      },
+      {
+        "desc": "Internal Server Error",
+        "code": 503
+      }
+    ],
+    "good": [
+      {
+        "desc": "OK",
+        "code": 200
+      },
+      {
+        "desc": "No Content",
+        "code": 204
+      }
+    ]
+  }
 }

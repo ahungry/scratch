@@ -1,3 +1,21 @@
+[http_responses]
+
+[[http_responses.bad]]
+code = 404
+desc = "Not Found"
+
+[[http_responses.bad]]
+code = 503
+desc = "Internal Server Error"
+
+[[http_responses.good]]
+code = 200
+desc = "OK"
+
+[[http_responses.good]]
+code = 204
+desc = "No Content"
+
 [[persons]]
 interests = ["programming", "drawing"]
 name = "Matthew Carter"
