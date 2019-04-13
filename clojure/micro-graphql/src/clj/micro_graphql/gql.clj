@@ -41,20 +41,23 @@
     "user" (fn [c p a] {:name "Matt" :age 36})
     (fn [c p a] p)))
 
+(def type-to-handler-map
+  {"QueryRoot" , handler-root
+   "QueryDice" , handler-query-dice
+   "User"      , handler-user})
+
 ;; It basically works down the query list, like a reduce call.
 (defn resolver-fn-dispatcher [type-name field-name]
   (prn type-name field-name)
-  (case type-name
-    "QueryRoot" (handler-root field-name)
-    "QueryDice" (handler-query-dice field-name)
-    "User" (handler-user field-name)
-    (fn [ctx p args] p)
-    ))
+  (let [handler (get type-to-handler-map type-name)]
+    (if handler
+      (handler field-name)
+      (fn [context parent args] nil))))
 
 ;; https://graphql.org/graphql-js/passing-arguments/
-(def query-str (slurp "query.gql"))
+;; (def query-str (slurp "query.gql"))
 
-(executor/execute nil schema-str resolver-fn query-str)
+;; (executor/execute nil schema-str resolver-fn query-str)
 
 (defn test-dice []
   (let [schema (slurp "gql/schema/dice.gql")
