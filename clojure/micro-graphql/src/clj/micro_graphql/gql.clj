@@ -33,13 +33,13 @@
     (fn [c p a] p)))
 
 (defn handler-tags [field-name]
-  (prn "Called HT")
+  ;; (prn "Called HT")
   (fn [c p a]
-    (prn "In handler tags: " field-name c p a)
+    ;; (prn "In handler tags: " field-name c p a)
     (get p (keyword field-name))))
 
 (defn handler-versions [field-name]
-  (prn "Version FN: " field-name)
+  ;; (prn "Version FN: " field-name)
   (if (= field-name "tags")
     (fn [c p a]
       [{:x 3 :parentDesc (get p :desc)}
@@ -47,7 +47,7 @@
     (fn [c p a] (get p (keyword field-name))))
   )
 
-(def type-to-handler-map
+(defn make-type-to-handler-map []
   {"QueryRoot" , handler-root
    "QueryDice" , handler-query-dice
    "User"      , handler-user
@@ -56,7 +56,8 @@
 
 ;; It basically works down the query list, like a reduce call.
 (defn resolver-fn-dispatcher [type-name field-name]
-  (let [handler (get type-to-handler-map type-name)]
+  (let [type-to-handler-map (make-type-to-handler-map)
+        handler (get type-to-handler-map type-name)]
     (if handler
       (handler field-name)
       (fn [context parent args] nil))))
