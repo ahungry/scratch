@@ -15,7 +15,7 @@ type Version {
 type QueryRoot {
   dice: QueryDice
   user(name: String): User
-  versions: [Version]
+  versions(nameLike: String): [Version]
 }
 
 schema {

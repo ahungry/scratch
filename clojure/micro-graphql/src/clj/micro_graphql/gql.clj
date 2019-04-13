@@ -41,18 +41,22 @@
   (case field-name
     "rollDice" (fn [c p a] (roll-n-dice-n-times (get a "numSides") (get a "numDice")))))
 
+;; It seems at one level above the field selectors is where you
+;; run the WHERE clause.  Then you filter off nodes at the bottom.
+;; Not especially great if you wanted to limit a query select out of a DB.
 (defn handler-root [field-name]
   (case field-name
     ;; Basically chains the data downwards.
     "user" (fn [c p a] {:name "Matt" :age 36})
     "versions" (fn [c p a]
-                 (prn "AHHH" c p a)
-                 {:name "Matt" :age 36})
+                 (prn "Filter to names like: " (get a "nameLike"))
+                 [{:desc "search-api" :version "1.2.3"}
+                  {:desc "blub-api" :version "4.5.6"}])
     (fn [c p a] p)))
 
 (defn handler-versions [field-name]
   (fn [c p a]
-     {:desc "Fake" :version "1.2.3"}))
+    (get p (keyword field-name))))
 
 (def type-to-handler-map
   {"QueryRoot" , handler-root
