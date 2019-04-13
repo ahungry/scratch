@@ -3,31 +3,10 @@
    [graphql-clj.executor :as executor]
    [clj-http.client :as client]))
 
-(def schema-str "type User {
-    byName(s: String): String
-    name: String
-    age: Int
-  }
-  type QueryRoot {
-    user: User
-  }
-
-  schema {
-    query: QueryRoot
-  }")
-
 (defn get-ip []
   (->
    (client/get "http://httpbin.org/ip" {:as :json})
    :body :origin))
-
-(defn resolver-fn [type-name field-name]
-  (prn type-name "< Type")
-  (prn field-name)
-  (get-in {"QueryRoot" {"user" (fn [context parent args]
-                                 {:name "test user name"
-                                  :age 30})}}
-          [type-name field-name]))
 
 (defn roll-n-dice-n-times [sides times]
   (map (fn [_] (rand-int sides)) (range times)))
