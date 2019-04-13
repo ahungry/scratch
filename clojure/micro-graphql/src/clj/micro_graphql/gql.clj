@@ -1,6 +1,7 @@
 (ns micro-graphql.gql
   (:require
-   [graphql-clj.executor :as executor]))
+   [graphql-clj.executor :as executor]
+   [clj-http.client :as client]))
 
 (def schema-str "type User {
     byName(s: String): String
@@ -14,6 +15,11 @@
   schema {
     query: QueryRoot
   }")
+
+(defn get-ip []
+  (->
+   (client/get "http://httpbin.org/ip" {:as :json})
+   :body :origin))
 
 (defn resolver-fn [type-name field-name]
   (prn type-name "< Type")
