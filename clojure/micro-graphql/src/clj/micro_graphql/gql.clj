@@ -34,7 +34,6 @@
 
 (defn handler-user [field-name]
   (fn [ctx p args]
-    (prn "User contexts: " ctx p args)
     (get p (keyword field-name))))
 
 (defn handler-query-dice [field-name]
@@ -66,7 +65,6 @@
 
 ;; It basically works down the query list, like a reduce call.
 (defn resolver-fn-dispatcher [type-name field-name]
-  (prn type-name field-name)
   (let [handler (get type-to-handler-map type-name)]
     (if handler
       (handler field-name)
