@@ -45,12 +45,20 @@
   (case field-name
     ;; Basically chains the data downwards.
     "user" (fn [c p a] {:name "Matt" :age 36})
+    "versions" (fn [c p a]
+                 (prn "AHHH" c p a)
+                 {:name "Matt" :age 36})
     (fn [c p a] p)))
+
+(defn handler-versions [field-name]
+  (fn [c p a]
+     {:desc "Fake" :version "1.2.3"}))
 
 (def type-to-handler-map
   {"QueryRoot" , handler-root
    "QueryDice" , handler-query-dice
-   "User"      , handler-user})
+   "User"      , handler-user
+   "Version"   , handler-versions})
 
 ;; It basically works down the query list, like a reduce call.
 (defn resolver-fn-dispatcher [type-name field-name]

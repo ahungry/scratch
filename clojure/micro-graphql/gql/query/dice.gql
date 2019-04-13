@@ -6,4 +6,8 @@
     age
     name
   }
+  versions {
+    desc
+    version
+  }
 }

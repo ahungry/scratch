@@ -7,9 +7,15 @@ type User {
   age: Int
 }
 
+type Version {
+  desc: String
+  version: String
+}
+
 type QueryRoot {
   dice: QueryDice
   user(name: String): User
+  versions: [Version]
 }
 
 schema {
