@@ -7,9 +7,15 @@ type User {
   age: Int
 }
 
+type Tags {
+  parentDesc: String
+  x: Int
+}
+
 type Version {
   desc: String
   version: String
+  tags(x: Int): [Tags]
 }
 
 type QueryRoot {

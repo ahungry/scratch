@@ -9,5 +9,6 @@
   versions(nameLike: "search") {
     desc
     version
+    tags(x: 5)
   }
 }

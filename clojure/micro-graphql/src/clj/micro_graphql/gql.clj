@@ -53,14 +53,34 @@
                   {:desc "blub-api" :version "4.5.6"}])
     (fn [c p a] p)))
 
-(defn handler-versions [field-name]
+(defn handler-tags [field-name]
+  (prn "Called HT")
   (fn [c p a]
+    (prn "In handler tags: " field-name c p a)
     (get p (keyword field-name))))
+
+(defn handler-versions [field-name]
+  (prn "Version FN: " field-name)
+  (if (= field-name "tags")
+    (fn [c p a]
+      [])
+    (fn [c p a] (get p (keyword field-name))))
+  ;; (case field-name
+  ;;   "tags" (fn [c p a]
+  ;;            (prn "In tags: " c p a)
+  ;;            [{:x 5 :parentDesc "OOO"}
+  ;;             {:x 3 :parentDesc "bar"}])
+  ;;   ;; else
+  ;;   (fn [c p a]
+  ;;     (prn "In version else: " c p a)
+  ;;     (get p (keyword field-name))))
+  )
 
 (def type-to-handler-map
   {"QueryRoot" , handler-root
    "QueryDice" , handler-query-dice
    "User"      , handler-user
+   "Tags"      , handler-tags
    "Version"   , handler-versions})
 
 ;; It basically works down the query list, like a reduce call.
