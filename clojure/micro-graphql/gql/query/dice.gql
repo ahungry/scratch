@@ -9,6 +9,9 @@
   versions(nameLike: "search") {
     desc
     version
-    tags(x: 5)
+    tags(x: 5) {
+      parentDesc
+      x
+    }
   }
 }

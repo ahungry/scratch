@@ -63,17 +63,9 @@
   (prn "Version FN: " field-name)
   (if (= field-name "tags")
     (fn [c p a]
-      [])
+      [{:x 3 :parentDesc (get p :desc)}
+       {:x 4 :parentDesc (get p :desc)} ])
     (fn [c p a] (get p (keyword field-name))))
-  ;; (case field-name
-  ;;   "tags" (fn [c p a]
-  ;;            (prn "In tags: " c p a)
-  ;;            [{:x 5 :parentDesc "OOO"}
-  ;;             {:x 3 :parentDesc "bar"}])
-  ;;   ;; else
-  ;;   (fn [c p a]
-  ;;     (prn "In version else: " c p a)
-  ;;     (get p (keyword field-name))))
   )
 
 (def type-to-handler-map
