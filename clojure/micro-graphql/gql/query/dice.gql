@@ -1,0 +1,9 @@
+{
+  dice {
+    rollDice(numDice: 3, numSides: 6)
+  }
+  user(name: "Matt") {
+    age
+    name
+  }
+}

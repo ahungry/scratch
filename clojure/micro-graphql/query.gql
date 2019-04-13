@@ -1,0 +1,6 @@
+query {
+  user(byName: "Frank") {
+    name
+    age
+  }
+}

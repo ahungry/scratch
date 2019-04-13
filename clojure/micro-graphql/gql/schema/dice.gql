@@ -1,0 +1,17 @@
+type QueryDice {
+  rollDice(numDice: Int!, numSides: Int): [Int]
+}
+
+type User {
+  name: String
+  age: Int
+}
+
+type QueryRoot {
+  dice: QueryDice
+  user(name: String): User
+}
+
+schema {
+  query: QueryRoot
+}
