@@ -71,3 +71,7 @@
   (let [schema (slurp "gql/schema/dice.gql")
         query (slurp "gql/query/dice.gql")]
     (executor/execute nil schema resolver-fn-dispatcher query)))
+
+(defn gql [query]
+  (let [schema (slurp "gql/schema/dice.gql")]
+    (executor/execute nil schema resolver-fn-dispatcher query)))
