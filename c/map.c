@@ -2,6 +2,39 @@
 #include <stdio.h>
 #include <string.h>
 
+double foo (double a, double b)
+{
+  double square (double z) { return z * z; }
+
+  return square (a) + square (b);
+}
+
+int
+caller (int (*fn)(int i), int y)
+{
+  return fn (y);
+}
+
+// https://gcc.gnu.org/onlinedocs/gcc/Nested-Functions.html
+int
+adder (int x)
+{
+  int add_fn (int y) { return x + y; }
+
+  // So, we can call the closure from other areas, as long as we don't
+  // leave the scope of this actual declaration of it's lexical
+  // variables...
+  return caller (add_fn, 10);
+}
+
+/* hack (int *array, int size) */
+/* { */
+/*   void store (int index, int value) */
+/*   { array[index] = value; } */
+
+/*   intermediate (store, size); */
+/* } */
+
 typedef struct Cons {
   int n;
   struct Cons* next;
@@ -75,6 +108,11 @@ main ()
     }
 
   cmap (&add_one, e);
+
+  printf ("Foo was: %f\n", foo (1, 2));
+
+  printf ("The nested fn was: %d\n", adder (10));
+  printf ("FIN\n");
 
   exit (0);
 }
