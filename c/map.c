@@ -142,8 +142,8 @@ main ()
   pthread_create(&pth, NULL, adder, (void*)(int)20);
 
   usleep (1);
-  int hah = caller (fn_address, 50);
-  int lol = caller (fn_address, 100);
+  int hah = caller (fn_address, 50); // it works - 70
+  int lol = caller (fn_address, 100); // this works - 120
   printf ("Hah was: %d\n", hah);
   printf ("Hah was: %d\n", lol);
   // printf ("The nested fn was: %d\n", adder (10));
