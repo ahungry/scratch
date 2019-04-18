@@ -16,15 +16,24 @@ caller (int (*fn)(int i), int y)
 }
 
 // https://gcc.gnu.org/onlinedocs/gcc/Nested-Functions.html
-int
+int*
 adder (int x)
 {
-  int add_fn (int y) { return x + y; }
+  int add_fn (int y) {
+    printf ("Doing stuff in your lexical scope.\n");
+    // Illegal instruction, core dumped if you refer here.
+    // printf ("And...x is??? %d\n", x);
+
+    return y;
+    // return x + y;
+  }
 
   // So, we can call the closure from other areas, as long as we don't
   // leave the scope of this actual declaration of it's lexical
   // variables...
-  return caller (add_fn, 10);
+  // return caller (add_fn, 10);
+
+  return add_fn;
 }
 
 /* hack (int *array, int size) */
@@ -111,7 +120,10 @@ main ()
 
   printf ("Foo was: %f\n", foo (1, 2));
 
-  printf ("The nested fn was: %d\n", adder (10));
+  int* fn = adder (30);
+  int hah = caller (fn, 50);
+  printf ("Hah was: %d\n", hah);
+  // printf ("The nested fn was: %d\n", adder (10));
   printf ("FIN\n");
 
   exit (0);
