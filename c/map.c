@@ -1,6 +1,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <pthread.h>
+#include <unistd.h>
+#include <stdio.h>
 
 double foo (double a, double b)
 {
@@ -15,25 +18,39 @@ caller (int (*fn)(int i), int y)
   return fn (y);
 }
 
+int* fn_address;
+
 // https://gcc.gnu.org/onlinedocs/gcc/Nested-Functions.html
-int*
-adder (int x)
+void*
+adder (void *ptr)
 {
+  printf ("ADDR TIME\n");
+  // fflush ();
+  int x = (int) ptr;
+
   int add_fn (int y) {
     printf ("Doing stuff in your lexical scope.\n");
     // Illegal instruction, core dumped if you refer here.
     // printf ("And...x is??? %d\n", x);
+    printf ("X was: %d\n", x);
 
-    return y;
-    // return x + y;
+    // return x;
+    return x + y;
   }
 
   // So, we can call the closure from other areas, as long as we don't
   // leave the scope of this actual declaration of it's lexical
   // variables...
   // return caller (add_fn, 10);
+  fn_address = add_fn;
 
-  return add_fn;
+  // Never leave, ever! (TODO: Add a mutex to allow leaving)
+  for (;;)
+    {
+      sleep(1);
+    }
+
+  // return add_fn;
 }
 
 /* hack (int *array, int size) */
@@ -120,9 +137,15 @@ main ()
 
   printf ("Foo was: %f\n", foo (1, 2));
 
-  int* fn = adder (30);
-  int hah = caller (fn, 50);
+  // int* fn = adder (30);
+  pthread_t pth;
+  pthread_create(&pth, NULL, adder, (void*)(int)20);
+
+  usleep (1);
+  int hah = caller (fn_address, 50); // it works - 70
+  int lol = caller (fn_address, 100); // this works - 120
   printf ("Hah was: %d\n", hah);
+  printf ("Hah was: %d\n", lol);
   // printf ("The nested fn was: %d\n", adder (10));
   printf ("FIN\n");
 
