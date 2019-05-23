@@ -1,15 +1,16 @@
 ;; A clojure like data accessor
 
-(defmacro cmap (&rest elements)
-  `(progn
-     ,@(let ((keep nil))
-         (mapcar (lambda (e)
-                   (setq keep (not keep))
-                   (if keep
-                       `(defun ,e (clist) (cl-getf clist ,e))
-                     `(defun lol () nil)))
-                 elements))
-     (list ,@elements)))
+(eval-when-compile
+  (defmacro cmap (&rest elements)
+    `(eval-when-compile
+       ,@(let ((keep nil))
+           (mapcar (lambda (e)
+                     (setq keep (not keep))
+                     (if keep
+                         `(defun ,e (clist) (cl-getf clist ,e))
+                       `(defun lol () nil)))
+                   elements))
+       (list ,@elements))))
 
 (defun blub ()
   (let ((tree-like (cmap :foo
@@ -22,7 +23,7 @@
                          (list :bar 3
                                :baz 4))))
     (cl-flet ((get-foo (lambda (x) (cl-getf x :foo)))
-           (get-baz (lambda (x) (cl-getf x :baz))))
+              (get-baz (lambda (x) (cl-getf x :baz))))
       (-> tree-like get-foo get-baz))))
 
 (blub-noisy)
