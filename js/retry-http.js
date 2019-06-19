@@ -9,7 +9,9 @@ function out (...rest) {
 async function getJson (opts) {
   out('Begin request...', opts)
   const { sleep } = opts
-  const response = await fetch(`http://127.0.0.1:12345/${sleep}`)
+  // const response = await fetch(`http://127.0.0.1:12345/${sleep}`)
+  const ts = (new Date()).getTime()
+  const response = await fetch(`http://127.0.0.1:12345/blockme?t=${ts}`)
 
   if (!response.ok) {
     throw new Error('Http failure')
@@ -22,7 +24,7 @@ async function getJson (opts) {
 }
 
 const RETRY_COUNT = 6
-const TIMEOUT = 3
+const TIMEOUT = 1
 
 async function getJsonWithRetries () {
   let maybe = undefined
@@ -42,10 +44,12 @@ async function getJsonWithRetries () {
         getJson({ sleep: pause })
           .then(result => {
             clearTimeout(canceller)
+            out('Finally received a response...')
             resolve(result)
           })
           .catch(reason => {
             clearTimeout(canceller)
+            out('Finally received a reject...')
             reject(reason.toString())
           })
       })
