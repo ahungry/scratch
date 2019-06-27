@@ -68,5 +68,12 @@ class Foo {
 
 shallBe((new Foo()).bar, 'dog', [])
 shallBe((new Foo()).bar, 'cat', [])
+// The last one is a fail case - it gives output as such:
+// AssertionError [ERR_ASSERTION]: Expected: cat but received dog
+// in: Function
+//   bar() {
+//     return 'dog'
+//   } with args:
+
 
 suite()
