@@ -67,7 +67,7 @@ class Foo {
 }
 
 shallBe((new Foo()).bar, 'dog', [])
-shallBe((new Foo()).bar, 'cat', [])
+// shallBe((new Foo()).bar, 'cat', [])
 // The last one is a fail case - it gives output as such:
 // AssertionError [ERR_ASSERTION]: Expected: cat but received dog
 // in: Function
@@ -75,5 +75,53 @@ shallBe((new Foo()).bar, 'cat', [])
 //     return 'dog'
 //   } with args:
 
+const toUpper = s => String(s).toUpperCase()
+// +t
+test(toUpper)
+toUpper.shallBe('DOG', 'dog')
+toUpper.shallBe('UNDEFINED', undefined)
+// -t
+
+const square = n => n * n
+test(square)
+square.shallBe(16, 4)
+
+const doubler = n => n * 2
+test(doubler)
+doubler.shallBe(20, 10)
+doubler.shallBe(40, 20)
+
+const compose = (f, g) => x => f(g(x))
+// compose f, g => f(g())
+// const squareDoubled = n => square(doubler(n))
+const squareDoubled = compose(square, doubler)
+test(squareDoubled)
+squareDoubled.shallBe(4, 1)
+squareDoubled.shallBe(16, 2)
+squareDoubled.shallBe(25, 2.5)
+
+const xaddOneToAll = xs => {
+  let result = []
+  for (let i = 0; i < xs.length; i++) {
+    if (isOdd(xs[i])) {
+      result.push(xs[i] + 1)
+    } else {
+      result.push(xs[i])
+    }
+  }
+  return result
+}
+const map = (f, xs) => {
+  let result = []
+  for (let i = 0; i < xs.length; i++) {
+    result.push(f(xs[i]))
+  }
+  return result
+}
+
+const addOneIfOdd = n => isOdd(n) ? n + 1 : n
+const addOneToAll = xs => map(addOneIfOdd, xs)
+test(addOneToAll)
+addOneToAll.shallBe([2, 4, 4], [[2, 3, 4]])
 
 suite()
