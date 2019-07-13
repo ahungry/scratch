@@ -1,0 +1,8 @@
+VBox {
+  -fx-background-color: beige;
+}
+
+Button {
+  -fx-background-color: #af0;
+  -fx-text-fill: white;
+}
