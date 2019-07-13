@@ -1,0 +1,2 @@
+* window manager
+Doesn't really seem to do much atm, even when launching it in xephyr.
