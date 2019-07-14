@@ -7,7 +7,7 @@
    [javafx.scene.canvas Canvas])
   (:gen-class))
 
-(def *state (atom {:clicked 0}))
+(def *state (atom {:event-queue []}))
 
 (defn inc-or-make [n] (if n (inc n) 0))
 
@@ -16,17 +16,28 @@
     ::stub (update-in state [:clicked] inc-or-make)
     state))
 
+(defn push-event [state event]
+  (update-in state [:event-queue] conj event))
+
+(defn maybe-button-fire-event [prefix state]
+  (let [{:keys [clicked]} (prefix state)]
+    (if (> (or clicked 0) 3)
+      (push-event state {:event/type ::click-threshold})
+      state)))
+
 (defn make-button-with-state
   "Wrapper to generate a stateful widget."
   [prefix]
   (let [handler (fn [event state]
                   "The event dispatching for received events."
                   [event state]
-                  (if (= prefix (:prefix event))
-                    (case (:event/type event)
-                      ::clicked (update-in state [prefix :clicked] inc-or-make)
-                      state)
-                    state))
+                  (->> (if (= prefix (:prefix event))
+                         (case (:event/type event)
+                           ::clicked (update-in state [prefix :clicked] inc-or-make)
+                           state)
+                         state)
+                       ;; Maybe fire off an event-queue based on conditions
+                       (maybe-button-fire-event prefix)))
         view (fn [state]
                (let [{:keys [clicked]} (prefix state)]
                  {:fx/type :button
