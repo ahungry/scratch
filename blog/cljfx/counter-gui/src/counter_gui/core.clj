@@ -16,10 +16,18 @@
     ::stub (update-in state [:clicked] inc-or-make)
     state))
 
+(def bws-prefix ::make-me-random)
+
 (defn eh-bws-1 [event state]
   (case (:event/type event)
-    ::clicked (update-in state [:bws-1 :clicked] inc-or-make)
+    ::clicked (update-in state [bws-prefix :clicked] inc-or-make)
     state))
+
+(defn button-with-state [state]
+  (let [{:keys [clicked]} (bws-prefix state)]
+    {:fx/type :button
+     :on-action {:event/type ::clicked}
+     :text (str "Click me more! x " clicked)}))
 
 (def event-handlers [event-handler eh-bws-1])
 
@@ -31,11 +39,6 @@
   ([state event]
    (let [f (reduce comp (map #(partial % event) event-handlers))]
      (f state))))
-
-(defn button-with-state [{:keys [clicked]}]
-  {:fx/type :button
-   :on-action {:event/type ::clicked}
-   :text (str "Click me more! x " clicked)})
 
 (defn root [{:keys [clicked] :as state}]
   {:fx/type :stage
@@ -49,7 +52,7 @@
                   :children
                   [
                    {:fx/type :label :text (str "Root state is: " clicked)}
-                   (button-with-state (:bws-1 state))
+                   (button-with-state state)
                    ;; {:fx/type button-with-state}
                    ]}
            }
