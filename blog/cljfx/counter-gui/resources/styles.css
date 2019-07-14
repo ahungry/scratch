@@ -1,8 +1,9 @@
 VBox {
-  -fx-background-color: beige;
+  -fx-background-color: #333;
 }
 
 Button {
-  -fx-background-color: #af0;
-  -fx-text-fill: white;
+  -fx-padding: 10px;
+  /* -fx-background-color: #af0; */
+  /* -fx-text-fill: white; */
 }
