@@ -7,12 +7,11 @@
    [javafx.scene.canvas Canvas])
   (:gen-class))
 
-(def *button-state-1 (atom {:clicked 0}))
 (def *state (atom {:clicked 0}))
 
-(defn event-handler [event]
+(defn event-handler [state event]
   (case (:event/type event)
-    ::stub (swap! *state update-in [:clicked] inc)
+    ::stub (update-in state [:clicked] inc)
     (prn "Unhandled event")))
 
 (defn button-with-state [{:keys [clicked]}]
@@ -38,25 +37,12 @@
 
    })
 
-(defn event-handler-bws [event]
-  (case (:event/type event)
-    ::stub
-    (prn "EHBWS was clicked!")
-    ;; (swap! *button-state-1 update-in [:clicked] inc)
-    (prn "Unhandled event")))
-
-(defn button-renderer []
-  (fx/create-renderer
-   :middleware (fx/wrap-map-desc assoc :fx/type button-with-state)
-   :opts {:fx.opt/map-event-handler event-handler-bws}))
-
 (defn renderer []
   (fx/create-renderer
    :middleware (fx/wrap-map-desc assoc :fx/type root)
-   :opts {:fx.opt/map-event-handler event-handler}))
+   :opts {:fx.opt/map-event-handler #(swap! *state event-handler %)}))
 
 (defn main []
-  (fx/mount-renderer *button-state-1 (button-renderer))
   (fx/mount-renderer *state (renderer)))
 
 (defn -main
