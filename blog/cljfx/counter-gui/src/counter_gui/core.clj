@@ -9,17 +9,35 @@
 
 (def *state (atom {:clicked 0}))
 
-(defn event-handler [state event]
+(defn inc-or-make [n] (if n (inc n) 0))
+
+(defn event-handler [event state]
   (case (:event/type event)
-    ::stub (update-in state [:clicked] inc)
-    (prn "Unhandled event")))
+    ::stub (update-in state [:clicked] inc-or-make)
+    state))
+
+(defn eh-bws-1 [event state]
+  (case (:event/type event)
+    ::clicked (update-in state [:bws-1 :clicked] inc-or-make)
+    state))
+
+(def event-handlers [event-handler eh-bws-1])
+
+(defn run-event-handlers
+  "If we have many event handler layers, we want to run each one in sequence.
+  This could let us have `private` widgets that maintain a state."
+  ([m]
+   (prn "REH received only one arg? " m))
+  ([state event]
+   (let [f (reduce comp (map #(partial % event) event-handlers))]
+     (f state))))
 
 (defn button-with-state [{:keys [clicked]}]
   {:fx/type :button
-   :on-action {:event/type ::stub}
-   :text (str "Click me more! x" clicked)})
+   :on-action {:event/type ::clicked}
+   :text (str "Click me more! x " clicked)})
 
-(defn root [{:keys [clicked]}]
+(defn root [{:keys [clicked] :as state}]
   {:fx/type :stage
    :showing true
    :title "Counter"
@@ -31,7 +49,8 @@
                   :children
                   [
                    {:fx/type :label :text (str "Root state is: " clicked)}
-                   {:fx/type button-with-state}
+                   (button-with-state (:bws-1 state))
+                   ;; {:fx/type button-with-state}
                    ]}
            }
 
@@ -40,7 +59,7 @@
 (defn renderer []
   (fx/create-renderer
    :middleware (fx/wrap-map-desc assoc :fx/type root)
-   :opts {:fx.opt/map-event-handler #(swap! *state event-handler %)}))
+   :opts {:fx.opt/map-event-handler #(swap! *state run-event-handlers %)}))
 
 (defn main []
   (fx/mount-renderer *state (renderer)))
