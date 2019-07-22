@@ -2,6 +2,7 @@
   (:require
    [cljfx.api :as fx])
   (:import
+   [javafx.application Platform]
    [javafx.scene.input KeyCode KeyEvent]
    [javafx.scene.paint Color]
    [javafx.scene.canvas Canvas])
@@ -94,4 +95,6 @@
 (defn -main
   "I don't do a whole lot ... yet."
   [& args]
-  (println "Hello, World!"))
+  (println "Begin.")
+  (Platform/setImplicitExit true)
+  (apply main args))

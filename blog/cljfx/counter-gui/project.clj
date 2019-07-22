@@ -15,4 +15,5 @@
                  ]
   :main ^:skip-aot counter-gui.core
   :target-path "target/%s"
-  :profiles {:uberjar {:aot :all}})
+  :profiles {:uberjar {:aot :all
+                       :injections [(javafx.application.Platform/exit)]}})
