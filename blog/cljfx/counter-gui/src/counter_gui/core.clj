@@ -81,7 +81,6 @@
                    ((:view bws-2) state)
                    ]}
            }
-
    })
 
 (defn renderer []
