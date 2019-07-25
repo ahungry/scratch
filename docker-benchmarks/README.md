@@ -31,9 +31,11 @@ Image: 440MB disk usage
 
 ### alpine:php-7 image with nginx / php-fpm (php 7.3.5)
 45MB ram / 16 PIDs / 0.02% CPU
+Image: 106MB disk usage
 
 ### alpine:3.10.1 with custom C http server
-1 MB ram / 1 PIDs / 0.00% CPU
+< 1 MB ram / 1 PIDs / 0.00% CPU
+Image: 5MB disk usage
 
 ## Container performance under load
 
