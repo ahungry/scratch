@@ -1,0 +1,13 @@
+# -*- mode: dockerfile -*-
+FROM alpine:3.10.1
+
+RUN apk add --update nodejs nodejs-npm
+RUN npm install -g yarn
+
+COPY code /app
+
+WORKDIR /app
+
+RUN yarn
+
+ENTRYPOINT yarn run start
