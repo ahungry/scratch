@@ -1,0 +1,19 @@
+# -*- mode: dockerfile -*-
+FROM ubuntu:18.04 # Has node v8
+#FROM ubuntu:19.04 # Has node v10
+
+# No idea why, but installing npm triggers about 300 MB of additional dependencies (18.04)...
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
+  apt-get -y install \
+  nodejs \
+  npm
+
+RUN npm install -g yarn
+
+COPY code /app
+
+WORKDIR /app
+
+RUN yarn
+
+ENTRYPOINT yarn run start
