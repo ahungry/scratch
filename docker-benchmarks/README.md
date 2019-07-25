@@ -29,6 +29,12 @@ Image: 440MB disk usage
 65MB ram / 20 PIDs / 0.02% CPU
 Image: 440MB disk usage
 
+### alpine:php-7 image with nginx / php-fpm (php 7.3.5)
+45MB ram / 16 PIDs / 0.02% CPU
+
+### alpine:3.10.1 with custom C http server
+1 MB ram / 1 PIDs / 0.00% CPU
+
 ## Container performance under load
 
 siege -r1000 -c5 http://localhost:3001 (or 3002)
@@ -58,6 +64,36 @@ Response time:                  0.00 secs
 Transaction rate:            1562.50 trans/sec
 Throughput:                     0.02 MB/sec
 Concurrency:                    4.83
+Successful transactions:        5000
+Failed transactions:               0
+Longest transaction:            0.01
+Shortest transaction:           0.00
+
+## alpine php 7.3
+
+Transactions:                   5000 hits
+Availability:                 100.00 %
+Elapsed time:                   2.36 secs
+Data transferred:               0.15 MB
+Response time:                  0.00 secs
+Transaction rate:            2118.64 trans/sec
+Throughput:                     0.06 MB/sec
+Concurrency:                    4.63
+Successful transactions:        5000
+Failed transactions:               0
+Longest transaction:            0.01
+Shortest transaction:           0.00
+
+## alpine:3.10.1 with custom C http server
+
+Transactions:                   5000 hits
+Availability:                 100.00 %
+Elapsed time:                   1.54 secs
+Data transferred:               0.03 MB
+Response time:                  0.00 secs
+Transaction rate:            3246.75 trans/sec
+Throughput:                     0.02 MB/sec
+Concurrency:                    4.40
 Successful transactions:        5000
 Failed transactions:               0
 Longest transaction:            0.01

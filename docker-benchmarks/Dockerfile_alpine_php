@@ -1,0 +1,14 @@
+# -*- mode: dockerfile -*-
+
+# latest tag
+FROM npulidom/alpine-nginx-php
+
+# working directory
+WORKDIR /var/www
+
+COPY code/index.php /var/www/public/
+
+# extra ops ...
+
+# start supervisor
+CMD ["--nginx-env"]
