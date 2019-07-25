@@ -15,16 +15,19 @@ Average time among a few runs: 200 seconds total @ 60 to 100 MB ram during build
 ### Ubuntu 19.04 (node v10)
 Average time among a few runs: 200 seconds total @ 60 to 100 MB ram during build
 
-## Container resource consumption while running
+## Container resource consumption while running + space taken by image
 
 ### alpine:3.10.1 (node v10)
 60MB ram / 18 PIDs / 0.02% CPU
+Image: 64.9MB disk usage
 
 ### Ubuntu 18.04 (node v8)
 65MB ram / 20 PIDs / 0.02% CPU
+Image: 440MB disk usage
 
 ### Ubuntu 19.04 (node v10)
 65MB ram / 20 PIDs / 0.02% CPU
+Image: 440MB disk usage
 
 ## Container performance under load
 
