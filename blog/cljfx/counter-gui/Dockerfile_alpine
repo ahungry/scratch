@@ -1,0 +1,53 @@
+FROM alpine:3.10.1
+
+WORKDIR /usr/src/myapp
+
+RUN apk add --update \
+  openjdk11-jdk \
+  bash \
+  curl \
+  mesa-gl \
+  xorg-server \
+  mesa-dri-swrast \
+  mesa-dri-intel \
+  openbox
+
+# May not need openbox - it doesn't seem to pull in any deps we need.
+
+RUN curl -O https://download.clojure.org/install/linux-install-1.10.1.466.sh
+RUN chmod +x linux-install-1.10.1.466.sh
+RUN ./linux-install-1.10.1.466.sh
+
+# Just run something to trigger the clojure core maven downloads
+RUN clojure -e 3
+
+RUN yes | adduser dummy
+RUN su -c 'clojure -e 3' dummy
+RUN chown -R dummy:dummy /usr/src/myapp
+RUN wget https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein
+RUN chmod +x lein
+RUN ./lein
+RUN cp lein /bin/lein
+RUN su -c 'lein version' dummy
+
+RUN mkdir -p /home/dummy
+RUN chown -R dummy:dummy /home/dummy
+
+# Done with host OS setup work - now to build the app.
+
+# This could probably be multi-stage and a part two here...(or after we make the jar maybe)
+COPY project.clj /usr/src/myapp/
+RUN lein deps
+
+COPY . /usr/src/myapp
+
+RUN mv "$(lein uberjar | sed -n 's/^Created \(.*standalone\.jar\)/\1/p')" myapp-standalone.jar
+
+COPY ./resources /usr/src/myapp/resources/
+
+WORKDIR /usr/src/myapp
+
+# Ok, SIGSEV failure on openjfx bootup - crashes in native code not JVM, but can't find cause.
+# At this point, not much is gained in using the alpine image though (so many deps pulled in)
+
+ENTRYPOINT ["java", "-jar", "/usr/src/myapp/myapp-standalone.jar"]
