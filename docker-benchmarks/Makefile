@@ -1,3 +1,9 @@
+alpine-build-clojure:
+	docker build -f Dockerfile_clojure -t bench-alpine-clojure .
+
+alpine-run-clojure:
+	docker run --rm -it -p 3010:3000 bench-alpine-clojure
+
 alpine-build-php:
 	docker build \
 	--no-cache \

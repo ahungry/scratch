@@ -1,0 +1,43 @@
+# -*- mode: dockerfile -*-
+FROM alpine:3.10.1 as build
+WORKDIR /app
+
+# Set up JDK
+RUN apk add --update \
+  openjdk11-jdk \
+  bash \
+  curl
+
+# Get Clojure
+RUN curl -O https://download.clojure.org/install/linux-install-1.10.1.466.sh
+RUN chmod +x linux-install-1.10.1.466.sh
+RUN ./linux-install-1.10.1.466.sh
+
+# Just run something to trigger the clojure core maven downloads
+RUN clojure -e 3
+
+# Get Lein for building
+RUN wget https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein
+RUN chmod +x lein
+RUN ./lein
+RUN cp lein /bin/lein
+
+# Done with host OS setup work - now to build the app.
+
+# Avoid COPY . and put project one directory lower than this file.
+COPY ./clojure-code /app
+RUN lein deps
+
+RUN mv "$(lein uberjar | sed -n 's/^Created \(.*standalone\.jar\)/\1/p')" /app/main.jar
+
+# Done with build.
+FROM alpine:3.10.1
+
+# Set up JRE
+RUN apk add --update \
+  openjdk11-jre
+
+COPY --from=build /app /app
+WORKDIR /app
+
+ENTRYPOINT ["java", "-jar", "/app/main.jar"]
