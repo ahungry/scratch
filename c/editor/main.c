@@ -58,6 +58,11 @@ void ab_append (struct abuf *ab, const char *s, int len)
   ab->len += len;
 }
 
+void ab_write (struct abuf *ab)
+{
+  write (STDOUT_FILENO, ab->b, ab->len);
+}
+
 void ab_free (struct abuf *ab)
 {
   free (ab->b);
@@ -66,6 +71,16 @@ void ab_free (struct abuf *ab)
 int get_byte_size_of_int_as_char (int n)
 {
   return (int) ((ceil (log10 (n)) + 1) * sizeof (char));
+}
+
+void cursor_hide (struct abuf *ab)
+{
+  ab_append (ab, "\x1b[?25l", 6);
+}
+
+void cursor_show (struct abuf *ab)
+{
+  ab_append (ab, "\x1b[?25h", 6);
 }
 
 void cursor_goto (struct abuf *ab, int x, int y)
@@ -203,11 +218,13 @@ void editor_refresh_screen ()
 
   // Ultimately, the rows we draw etc. we would receive
   // from a remote data source, and run the refresh on receipt of it.
+  cursor_hide (&ab);
   clear_and_reposition (&ab);
   editor_draw_rows (&ab);
   cursor_goto (&ab, 1, 1);
+  cursor_show (&ab);
 
-  write (STDOUT_FILENO, ab.b, ab.len);
+  ab_write (&ab);
   ab_free (&ab);
 }
 
@@ -222,6 +239,7 @@ void editor_process_keypress ()
     {
     case CTRL_KEY('q'):
       clear_and_reposition (&ab);
+      ab_write (&ab);
       ab_free (&ab);
       exit (0);
       break;
