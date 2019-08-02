@@ -19,16 +19,16 @@
 
 enum editor_key
   {
-    ARROW_LEFT = 'a',
-    ARROW_RIGHT = 'd',
-    ARROW_UP = 'w',
-    ARROW_DOWN = 's'
+    ARROW_LEFT = 1000,
+    ARROW_RIGHT,
+    ARROW_UP,
+    ARROW_DOWN
   };
 
 /** declarations **/
 
 void die (const char *s);
-char editor_read_key ();
+int editor_read_key ();
 int get_cursor_position (int *rows, int *cols);
 
 /** data **/
@@ -187,7 +187,7 @@ int get_window_size (int *rows, int *cols)
     }
 }
 
-char editor_read_key ()
+int editor_read_key ()
 {
   int nread;
   char c;
@@ -307,21 +307,44 @@ void editor_refresh_screen ()
 
 /** input **/
 
-void editor_move_cursor (char key)
+void editor_move_cursor (int key)
 {
   switch (key)
     {
-    case ARROW_LEFT: world.cx--; break;
-    case ARROW_RIGHT: world.cx++; break;
-    case ARROW_UP: world.cy--; break;
-    case ARROW_DOWN: world.cy++; break;
+    case ARROW_LEFT:
+      if (world.cx > 1)
+        {
+          world.cx--;
+        }
+      break;
+
+    case ARROW_RIGHT:
+      if (world.cx != world.cols)
+        {
+          world.cx++;
+        }
+      break;
+
+    case ARROW_UP:
+      if (world.cy > 1)
+        {
+          world.cy--;
+        }
+      break;
+
+    case ARROW_DOWN:
+      if (world.cy != world.rows)
+        {
+          world.cy++;
+        }
+      break;
     }
 }
 
 void editor_process_keypress ()
 {
   struct abuf ab = ABUF_INIT;
-  char c = editor_read_key ();
+  int c = editor_read_key ();
 
   // TODO: Here, we would want to send it out / process it.
   switch (c)
