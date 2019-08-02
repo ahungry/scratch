@@ -17,6 +17,14 @@
 #define MY_VERSION "0.0.1"
 #define CTRL_KEY(k) ((k) & 0x1f)
 
+enum editor_key
+  {
+    ARROW_LEFT = 'a',
+    ARROW_RIGHT = 'd',
+    ARROW_UP = 'w',
+    ARROW_DOWN = 's'
+  };
+
 /** declarations **/
 
 void die (const char *s);
@@ -202,10 +210,10 @@ char editor_read_key ()
           // Parse the arrow keys
           switch (seq[1])
             {
-            case 'A': return 'w';
-            case 'B': return 's';
-            case 'C': return 'd';
-            case 'D': return 'a';
+            case 'A': return ARROW_UP;
+            case 'B': return ARROW_DOWN;
+            case 'C': return ARROW_RIGHT;
+            case 'D': return ARROW_LEFT;
             }
         }
 
@@ -303,10 +311,10 @@ void editor_move_cursor (char key)
 {
   switch (key)
     {
-    case 'a': world.cx--; break;
-    case 'd': world.cx++; break;
-    case 'w': world.cy--; break;
-    case 's': world.cy++; break;
+    case ARROW_LEFT: world.cx--; break;
+    case ARROW_RIGHT: world.cx++; break;
+    case ARROW_UP: world.cy--; break;
+    case ARROW_DOWN: world.cy++; break;
     }
 }
 
@@ -325,10 +333,10 @@ void editor_process_keypress ()
       exit (0);
       break;
 
-    case 'w':
-    case 'a':
-    case 's':
-    case 'd':
+    case ARROW_UP:
+    case ARROW_DOWN:
+    case ARROW_LEFT:
+    case ARROW_RIGHT:
       editor_move_cursor (c);
       break;
     }
