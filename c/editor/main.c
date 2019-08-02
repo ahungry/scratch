@@ -6,6 +6,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/ioctl.h>
 #include <termios.h>
 #include <unistd.h>
 #include <math.h>
@@ -16,7 +17,14 @@
 
 /** data **/
 
-struct termios orig_termios;
+struct world_atom
+{
+  int rows;
+  int cols;
+  struct termios orig_termios;
+};
+
+struct world_atom world;
 
 /** util **/
 
@@ -34,17 +42,22 @@ void cursor_goto (int x, int y)
   int xlen = get_byte_size_of_int_as_char (x);
   int ylen = get_byte_size_of_int_as_char (y);
   int olen = 4; // \x1b [ H, and the ;
-  char str[xlen + ylen + olen]; // Slot for \x1b[_;_H
+  int len = xlen + ylen + olen;
+  char str[len]; // Slot for \x1b[_;_H
 
   sprintf (str, "\x1b[%d;%dH", x, y);
-  write (STDOUT_FILENO, "\x1b[H", 3); // Position cursor 12;40H would center on an 80x24 size
+  write (STDOUT_FILENO, str, len); // Position cursor 12;40H would center on an 80x24 size
+}
+
+void clear_screen ()
+{
+  write (STDOUT_FILENO, "\x1b[2J", 4); // Clear screen
 }
 
 void clear_and_reposition ()
 {
-  write (STDOUT_FILENO, "\x1b[2J", 4); // Clear screen
+  clear_screen ();
   cursor_goto (1, 1);
-  write (STDOUT_FILENO, "\x1b[H", 3); // Position cursor 12;40H would center on an 80x24 size
 }
 
 /** terminal **/
@@ -58,16 +71,16 @@ void die (const char *s)
 
 void disable_raw_mode ()
 {
-  if (-1 == tcsetattr (STDIN_FILENO, TCSAFLUSH, &orig_termios))
+  if (-1 == tcsetattr (STDIN_FILENO, TCSAFLUSH, &world.orig_termios))
     die ("tcsetattr");
 }
 
 void enable_raw_mode ()
 {
-  if (-1 == tcgetattr (STDIN_FILENO, &orig_termios)) die("tcgetattr");
+  if (-1 == tcgetattr (STDIN_FILENO, &world.orig_termios)) die("tcgetattr");
   atexit (disable_raw_mode);
 
-  struct termios raw = orig_termios;
+  struct termios raw = world.orig_termios;
   raw.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
   raw.c_oflag &= ~(OPOST);
   raw.c_cflag |= (CS8);
@@ -76,6 +89,23 @@ void enable_raw_mode ()
   raw.c_cc[VTIME] = 1; // Every 10th of second redraw / skip the read (stop block).
 
   if (-1 == tcsetattr (STDIN_FILENO, TCSAFLUSH, &raw)) die("tcsetattr");
+}
+
+int get_window_size (int *rows, int *cols)
+{
+  struct winsize ws;
+
+  if (ioctl (STDOUT_FILENO, TIOCGWINSZ, &ws) == -1 || ws.ws_col == 0)
+    {
+      return -1; // Invalid window size, error.
+    }
+  else
+    {
+      *cols = ws.ws_col;
+      *rows = ws.ws_row;
+
+      return 0;
+    }
 }
 
 char editor_read_key ()
@@ -96,7 +126,7 @@ void editor_draw_rows ()
 {
   int y;
 
-  for (y = 0; y < 24; y++)
+  for (y = 0; y < world.rows; y++)
     {
       write (STDOUT_FILENO, "~\r\n", 3);
     }
@@ -126,9 +156,16 @@ void editor_process_keypress ()
 
 
 /** init **/
+
+void init_world ()
+{
+  if (get_window_size (&world.rows, &world.cols) == -1) die("get_window_size");
+}
+
 int main ()
 {
   enable_raw_mode ();
+  init_world ();
 
   while (1)
     {
