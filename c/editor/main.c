@@ -1,5 +1,7 @@
 // https://viewsourcecode.org/snaptoken/kilo/02.enteringRawMode.html
 
+/** includes **/
+
 #include <ctype.h>
 #include <errno.h>
 #include <stdio.h>
@@ -7,7 +9,15 @@
 #include <termios.h>
 #include <unistd.h>
 
+/** defines **/
+
+#define CTRL_KEY(k) ((k) & 0x1f)
+
+/** data **/
+
 struct termios orig_termios;
+
+/** terminal **/
 
 void die (const char *s)
 {
@@ -37,26 +47,43 @@ void enable_raw_mode ()
   if (-1 == tcsetattr (STDIN_FILENO, TCSAFLUSH, &raw)) die("tcsetattr");
 }
 
+char editor_read_key ()
+{
+  int nread;
+  char c;
+
+  while ((nread = read (STDIN_FILENO, &c, 1)) != 1)
+    {
+      if (nread == -1 && errno != EAGAIN) die ("read");
+    }
+
+  return c;
+}
+
+/** input **/
+void editor_process_keypress ()
+{
+  char c = editor_read_key ();
+
+  // TODO: Here, we would want to send it out / process it.
+  switch (c)
+    {
+    case CTRL_KEY('q'):
+      exit (0);
+      break;
+    }
+}
+
+
+/** init **/
+
 int main ()
 {
   enable_raw_mode ();
 
   while (1)
     {
-      char c = '\0';
-      if (-1 == read (STDIN_FILENO, &c, 1) && errno != EAGAIN) die("read");
-
-      // TODO: Here we want to scoop the input and send it to the remote.
-      if (iscntrl (c))
-        {
-          printf ("%d %x\r\n", c, c); // is control character?
-        }
-      else
-        {
-          printf ("%d ('%c') %x\r\n", c, c, c);
-        }
-
-      if (c == 'q') break;
+      editor_process_keypress ();
     }
 
   return 0;
