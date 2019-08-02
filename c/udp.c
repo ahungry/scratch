@@ -69,7 +69,7 @@ int main() {
 
   skaddr.sin_family = AF_INET;
   skaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-  skaddr.sin_port = htons(0);
+  skaddr.sin_port = htons(12345); // 0 for the kernel to choose random
 
   if (bind(ld, (struct sockaddr *) &skaddr, sizeof(skaddr))<0) {
     printf("Problem binding\n");
