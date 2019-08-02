@@ -27,6 +27,7 @@ int get_cursor_position (int *rows, int *cols);
 
 struct world_atom
 {
+  int cx, cy;
   int rows;
   int cols;
   struct termios orig_termios;
@@ -90,7 +91,20 @@ void cursor_show (struct abuf *ab)
   ab_append (ab, "\x1b[?25h", 6);
 }
 
+// Alt implementation (shove in a oversized buffer, use snprintf to recompute):
+// char buf[32];
+// snprintf(buf, sizeof(buf), "\x1b[%d;%dH", E.cy + 1, E.cx + 1);
+// abAppend(&ab, buf, strlen(buf));
 void cursor_goto (struct abuf *ab, int x, int y)
+{
+  char buf[32];
+
+  snprintf (buf, sizeof (buf), "\x1b[%d;%dH", y, x);
+  ab_append (ab, buf, strlen (buf));
+}
+
+// TODO: What didn't it like about this?
+void xcursor_goto (struct abuf *ab, int x, int y)
 {
   int xlen = get_byte_size_of_int_as_char (x);
   int ylen = get_byte_size_of_int_as_char (y);
@@ -178,6 +192,29 @@ char editor_read_key ()
       if (nread == -1 && errno != EAGAIN) die ("read");
     }
 
+  // A control code like C- was hit.
+  if (c == '\x1b')
+    {
+      char seq[3];
+
+      if (read (STDIN_FILENO, &seq[0], 1) != 1) return '\x1b';
+      if (read (STDIN_FILENO, &seq[1], 1) != 1) return '\x1b';
+
+      if (seq[0] == '[')
+        {
+          // Parse the arrow keys
+          switch (seq[1])
+            {
+            case 'A': return 'w';
+            case 'B': return 's';
+            case 'C': return 'd';
+            case 'D': return 'a';
+            }
+        }
+
+      return '\x1b';
+    }
+
   return c;
 }
 
@@ -203,6 +240,7 @@ int get_cursor_position (int *rows, int *cols)
   return 0;
 }
 
+// Calculation to center the screen
 int get_padding (int cols, int len) { return (cols - len) / 2; }
 
 // Write the anchor, then pad out to the middle.
@@ -254,9 +292,8 @@ void editor_refresh_screen ()
   // Ultimately, the rows we draw etc. we would receive
   // from a remote data source, and run the refresh on receipt of it.
   cursor_hide (&ab);
-  cursor_goto (&ab, 1, 1);
   editor_draw_rows (&ab);
-  cursor_goto (&ab, 1, 1);
+  cursor_goto (&ab, world.cx, world.cy);
   cursor_show (&ab);
 
   ab_write (&ab);
@@ -264,6 +301,18 @@ void editor_refresh_screen ()
 }
 
 /** input **/
+
+void editor_move_cursor (char key)
+{
+  switch (key)
+    {
+    case 'a': world.cx--; break;
+    case 'd': world.cx++; break;
+    case 'w': world.cy--; break;
+    case 's': world.cy++; break;
+    }
+}
+
 void editor_process_keypress ()
 {
   struct abuf ab = ABUF_INIT;
@@ -278,6 +327,13 @@ void editor_process_keypress ()
       ab_free (&ab);
       exit (0);
       break;
+
+    case 'w':
+    case 'a':
+    case 's':
+    case 'd':
+      editor_move_cursor (c);
+      break;
     }
 }
 
@@ -286,6 +342,9 @@ void editor_process_keypress ()
 
 void init_world ()
 {
+  world.cx = 10;
+  world.cy = 10;
+
   if (get_window_size (&world.rows, &world.cols) == -1) die("get_window_size");
 }
 
