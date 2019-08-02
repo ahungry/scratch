@@ -14,6 +14,7 @@
 
 /** defines **/
 
+#define MY_VERSION "0.0.1"
 #define CTRL_KEY(k) ((k) & 0x1f)
 
 /** declarations **/
@@ -71,6 +72,12 @@ void ab_free (struct abuf *ab)
 int get_byte_size_of_int_as_char (int n)
 {
   return (int) ((ceil (log10 (n)) + 1) * sizeof (char));
+}
+
+// clear everything at end of row
+void clear_row (struct abuf *ab)
+{
+  ab_append (ab, "\x1b[K", 3);
 }
 
 void cursor_hide (struct abuf *ab)
@@ -196,6 +203,19 @@ int get_cursor_position (int *rows, int *cols)
   return 0;
 }
 
+int get_padding (int cols, int len) { return (cols - len) / 2; }
+
+// Write the anchor, then pad out to the middle.
+void do_padding (struct abuf *ab, int pad)
+{
+  if (pad)
+    {
+      ab_append (ab, "~", 1);
+      pad--;
+    }
+  while (pad--) ab_append (ab, " ", 1);
+}
+
 /** output **/
 void editor_draw_rows (struct abuf *ab)
 {
@@ -203,7 +223,22 @@ void editor_draw_rows (struct abuf *ab)
 
   for (y = 0; y < world.rows; y++)
     {
-      ab_append (ab, "~", 1);
+      if (y == world.rows / 3)
+        {
+          char welcome[80];
+          int welcomelen = snprintf (welcome,  sizeof (welcome),
+                                     "xxx -- version %s", MY_VERSION);
+          if (welcomelen > world.cols) welcomelen = world.cols;
+          int padding = get_padding (world.cols, welcomelen);
+          do_padding (ab, padding);
+          ab_append (ab, welcome, welcomelen);
+        }
+      else
+        {
+          // Write empty line marker
+          ab_append (ab, "~", 1);
+        }
+      clear_row (ab);
 
       if (y < world.rows -1)
         {
@@ -219,7 +254,7 @@ void editor_refresh_screen ()
   // Ultimately, the rows we draw etc. we would receive
   // from a remote data source, and run the refresh on receipt of it.
   cursor_hide (&ab);
-  clear_and_reposition (&ab);
+  cursor_goto (&ab, 1, 1);
   editor_draw_rows (&ab);
   cursor_goto (&ab, 1, 1);
   cursor_show (&ab);
