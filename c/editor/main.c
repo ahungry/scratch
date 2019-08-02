@@ -15,6 +15,12 @@
 
 #define CTRL_KEY(k) ((k) & 0x1f)
 
+/** declarations **/
+
+void die (const char *s);
+char editor_read_key ();
+int get_cursor_position (int *rows, int *cols);
+
 /** data **/
 
 struct world_atom
@@ -29,7 +35,6 @@ struct world_atom world;
 /** util **/
 
 // COL / ROW
-void die (const char *s);
 
 // https://stackoverflow.com/questions/8257714/how-to-convert-an-int-to-string-in-c#8257728
 int get_byte_size_of_int_as_char (int n)
@@ -97,7 +102,10 @@ int get_window_size (int *rows, int *cols)
 
   if (ioctl (STDOUT_FILENO, TIOCGWINSZ, &ws) == -1 || ws.ws_col == 0)
     {
-      return -1; // Invalid window size, error.
+      // Fallback for non-ioctl supporting systems
+      if (write (STDOUT_FILENO, "\x1b[999C\x1b[999B", 12) != 12) return -1;
+
+      return get_cursor_position (rows, cols);
     }
   else
     {
@@ -119,6 +127,28 @@ char editor_read_key ()
     }
 
   return c;
+}
+
+int get_cursor_position (int *rows, int *cols)
+{
+  char buf[32];
+  unsigned int i = 0;
+
+  if (write (STDOUT_FILENO, "\x1b[6n", 4) != 4) return -1;
+
+  while (i < sizeof (buf) - 1)
+    {
+      if (read (STDIN_FILENO, &buf[i], 1) != 1) break;
+      if (buf[i] == 'R') break;
+      i++;
+    }
+  buf[i] = '\0';
+
+  // printf ("\r\n&buf[1]: '%s'\r\n", &buf[1]);
+  if (buf[0] != '\x1b' || buf[1] != '[') return -1;
+  if (sscanf (&buf[2], "%d;%d", rows, cols) != 2) return -1;
+
+  return 0;
 }
 
 /** output **/
