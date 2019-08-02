@@ -4,12 +4,13 @@
 
 #include <ctype.h>
 #include <errno.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/ioctl.h>
 #include <termios.h>
 #include <unistd.h>
-#include <math.h>
 
 /** defines **/
 
@@ -37,12 +38,37 @@ struct world_atom world;
 // COL / ROW
 
 // https://stackoverflow.com/questions/8257714/how-to-convert-an-int-to-string-in-c#8257728
+
+struct abuf
+{
+  char *b;
+  int len;
+};
+
+#define ABUF_INIT {NULL, 0}
+
+void ab_append (struct abuf *ab, const char *s, int len)
+{
+  char *new = realloc (ab->b, ab->len + len);
+
+  if (new == NULL) return;
+
+  memcpy (&new[ab->len], s, len);
+  ab->b = new;
+  ab->len += len;
+}
+
+void ab_free (struct abuf *ab)
+{
+  free (ab->b);
+}
+
 int get_byte_size_of_int_as_char (int n)
 {
   return (int) ((ceil (log10 (n)) + 1) * sizeof (char));
 }
 
-void cursor_goto (int x, int y)
+void cursor_goto (struct abuf *ab, int x, int y)
 {
   int xlen = get_byte_size_of_int_as_char (x);
   int ylen = get_byte_size_of_int_as_char (y);
@@ -51,25 +77,29 @@ void cursor_goto (int x, int y)
   char str[len]; // Slot for \x1b[_;_H
 
   sprintf (str, "\x1b[%d;%dH", x, y);
-  write (STDOUT_FILENO, str, len); // Position cursor 12;40H would center on an 80x24 size
+  // write (STDOUT_FILENO, str, len); // Position cursor 12;40H would center on an 80x24 size
+  ab_append (ab, str, len);
 }
 
-void clear_screen ()
+void clear_screen (struct abuf *ab)
 {
-  write (STDOUT_FILENO, "\x1b[2J", 4); // Clear screen
+  ab_append (ab, "\x1b[2J", 4); // Clear screen
 }
 
-void clear_and_reposition ()
+void clear_and_reposition (struct abuf *ab)
 {
-  clear_screen ();
-  cursor_goto (1, 1);
+  clear_screen (ab);
+  cursor_goto (ab, 1, 1);
 }
 
 /** terminal **/
 
 void die (const char *s)
 {
-  clear_and_reposition ();
+  struct abuf ab = ABUF_INIT;
+
+  clear_and_reposition (&ab);
+  ab_free (&ab);
   perror (s);
   exit (1);
 }
@@ -152,33 +182,47 @@ int get_cursor_position (int *rows, int *cols)
 }
 
 /** output **/
-void editor_draw_rows ()
+void editor_draw_rows (struct abuf *ab)
 {
   int y;
 
   for (y = 0; y < world.rows; y++)
     {
-      write (STDOUT_FILENO, "~\r\n", 3);
+      ab_append (ab, "~", 1);
+
+      if (y < world.rows -1)
+        {
+          ab_append (ab, "\r\n", 2);
+        }
     }
 }
 
 void editor_refresh_screen ()
 {
-  clear_and_reposition ();
-  editor_draw_rows ();
-  cursor_goto (1, 1);
+  struct abuf ab = ABUF_INIT;
+
+  // Ultimately, the rows we draw etc. we would receive
+  // from a remote data source, and run the refresh on receipt of it.
+  clear_and_reposition (&ab);
+  editor_draw_rows (&ab);
+  cursor_goto (&ab, 1, 1);
+
+  write (STDOUT_FILENO, ab.b, ab.len);
+  ab_free (&ab);
 }
 
 /** input **/
 void editor_process_keypress ()
 {
+  struct abuf ab = ABUF_INIT;
   char c = editor_read_key ();
 
   // TODO: Here, we would want to send it out / process it.
   switch (c)
     {
     case CTRL_KEY('q'):
-      clear_and_reposition ();
+      clear_and_reposition (&ab);
+      ab_free (&ab);
       exit (0);
       break;
     }
