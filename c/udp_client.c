@@ -12,7 +12,7 @@
 #include <netinet/in.h>
 #include <sys/uio.h>
 
-void send_udp (int fd, struct addrinfo* res);
+void send_udp (int fd, struct addrinfo* res, char *s);
 
 void die (const char *s) { perror (s); exit (1); }
 
@@ -48,9 +48,11 @@ int get_socket_fd (struct addrinfo** return_res)
 }
 
 // Fire and forget some udp (we don't get anything back)
-void send_udp (int fd, struct addrinfo* res)
+void send_udp (int fd, struct addrinfo* res, char *s)
 {
-  const char content[30] = "Hello world";
+  // const char content[30] = "Hello world";
+  char content[30];
+  memcpy (content, s, strlen (s));
   if (sendto (fd, content, sizeof (content), 0,
               res->ai_addr, res->ai_addrlen) == -1)
     {
@@ -71,11 +73,11 @@ void receive_udp (int fd, struct addrinfo* res)
   printf ("Got %d bytes\n", n);
 }
 
-int main ()
+int main (int argc, char *argv[])
 {
   struct addrinfo* res = 0;
   int fd = get_socket_fd (&res);
-  send_udp (fd, res);
+  send_udp (fd, res, argv[1]);
   receive_udp (fd, res);
 
   return 0;
