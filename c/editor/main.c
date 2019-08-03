@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
+#include <sys/types.h>
 #include <termios.h>
 #include <unistd.h>
 
@@ -23,6 +24,7 @@ enum editor_key
     ARROW_RIGHT,
     ARROW_UP,
     ARROW_DOWN,
+    DEL_KEY,
     HOME_KEY,
     END_KEY,
     PAGE_UP,
@@ -37,11 +39,19 @@ int get_cursor_position (int *rows, int *cols);
 
 /** data **/
 
+typedef struct erow
+{
+  int size;
+  char *chars;
+} erow;
+
 struct world_atom
 {
   int cx, cy;
   int rows;
   int cols;
+  int numrows;
+  erow row;
   struct termios orig_termios;
 };
 
@@ -219,6 +229,7 @@ int editor_read_key ()
                   switch (seq[1])
                     {
                     case '1': return HOME_KEY;
+                    case '3': return DEL_KEY;
                     case '4': return END_KEY;
                     case '5': return  PAGE_UP;
                     case '6': return  PAGE_DOWN;
@@ -292,6 +303,19 @@ void do_padding (struct abuf *ab, int pad)
   while (pad--) ab_append (ab, " ", 1);
 }
 
+/** file i/o **/
+void editor_open ()
+{
+  char *line = "Hello, world!";
+  ssize_t linelen = 13;
+
+  world.row.size = linelen;
+  world.row.chars = malloc (linelen + 1);
+  memcpy (world.row.chars, line, linelen);
+  world.row.chars[linelen] = '\0';
+  world.numrows = 1;
+}
+
 /** output **/
 void editor_draw_rows (struct abuf *ab)
 {
@@ -299,20 +323,29 @@ void editor_draw_rows (struct abuf *ab)
 
   for (y = 0; y < world.rows; y++)
     {
-      if (y == world.rows / 3)
+      if (y >= world.numrows)
         {
-          char welcome[80];
-          int welcomelen = snprintf (welcome,  sizeof (welcome),
-                                     "xxx -- version %s", MY_VERSION);
-          if (welcomelen > world.cols) welcomelen = world.cols;
-          int padding = get_padding (world.cols, welcomelen);
-          do_padding (ab, padding);
-          ab_append (ab, welcome, welcomelen);
+          if (y == world.rows / 3)
+            {
+              char welcome[80];
+              int welcomelen = snprintf (welcome,  sizeof (welcome),
+                                         "xxx -- version %s", MY_VERSION);
+              if (welcomelen > world.cols) welcomelen = world.cols;
+              int padding = get_padding (world.cols, welcomelen);
+              do_padding (ab, padding);
+              ab_append (ab, welcome, welcomelen);
+            }
+          else
+            {
+              // Write empty line marker
+              ab_append (ab, "~", 1);
+            }
         }
       else
         {
-          // Write empty line marker
-          ab_append (ab, "~", 1);
+          int len = world.row.size;
+          if (len > world.cols) len = world.cols;
+          ab_append (ab, world.row.chars, len);
         }
       clear_row (ab);
 
@@ -426,6 +459,7 @@ void init_world ()
 {
   world.cx = 10;
   world.cy = 10;
+  world.numrows = 0;
 
   if (get_window_size (&world.rows, &world.cols) == -1) die("get_window_size");
 }
@@ -434,6 +468,7 @@ int main ()
 {
   enable_raw_mode ();
   init_world ();
+  editor_open ();
 
   while (1)
     {
