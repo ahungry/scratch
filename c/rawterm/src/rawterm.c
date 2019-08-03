@@ -7,16 +7,20 @@
 #define _BSD_SOURCE
 #define _GNU_SOURCE
 
+#include <arpa/inet.h>  /* IP address conversion stuff */
 #include <ctype.h>
 #include <errno.h>
 #include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <netdb.h>      /* gethostbyname */
+#include <netinet/in.h> /* INET constants and stuff */
+#include <stdio.h>      /* standard C i/o facilities */
+#include <stdlib.h>     /* needed for atoi() */
 #include <string.h>
 #include <sys/ioctl.h>
-#include <sys/types.h>
+#include <sys/socket.h> /* socket specific definitions */
+#include <sys/types.h>  /* system data type definitions */
 #include <termios.h>
-#include <unistd.h>
+#include <unistd.h>     /* defines STDIN_FILENO, system calls,etc */
 
 /** defines **/
 
@@ -308,6 +312,7 @@ void editor_refresh_screen ()
   // Ultimately, the rows we draw etc. we would receive
   // from a remote data source, and run the refresh on receipt of it.
   cursor_hide (&ab);
+  clear_and_reposition (&ab);
   editor_draw_rows (&ab);
   cursor_goto (&ab, world.cx, world.cy);
   cursor_show (&ab);
@@ -337,10 +342,107 @@ void init_world ()
   if (get_window_size (&world.rows, &world.cols) == -1) die("get_window_size");
 }
 
+// Listen for incoming events.
+#define MAXBUF 1024*1024
+
+void echo (int sd)
+{
+    uint len;
+    int n;
+    char bufin[MAXBUF];
+    struct sockaddr_in remote;
+
+    /* need to know how big address struct is, len must be set before the
+       call to recvfrom!!! */
+
+    len = sizeof(remote);
+
+    while (1) {
+      /* read a datagram from the socket (put result in bufin) */
+      n=recvfrom(sd,bufin,MAXBUF,0,(struct sockaddr *)&remote,&len);
+
+      /* print out the address of the sender */
+      printf("Got a datagram from %s port %d\n",
+             inet_ntoa(remote.sin_addr), ntohs(remote.sin_port));
+
+      if (n<0) {
+        perror("Error receiving data");
+      } else {
+        printf("GOT %d BYTES\n",n);
+        /* Got something, just send it back */
+        sendto(sd,bufin,n,0,(struct sockaddr *)&remote,len);
+
+        struct abuf ab = ABUF_INIT;
+
+        // Ultimately, the rows we draw etc. we would receive
+        // from a remote data source, and run the refresh on receipt of it.
+        cursor_hide (&ab);
+        clear_and_reposition (&ab);
+        ab_append (&ab, bufin, len);
+        // editor_draw_rows (&ab);
+        cursor_goto (&ab, world.cx, world.cy);
+        cursor_show (&ab);
+
+        ab_write (&ab);
+        ab_free (&ab);
+
+      }
+    }
+}
+
+void udp_listen ()
+{
+  int ld;
+  struct sockaddr_in skaddr;
+  uint length;
+
+  /* create a socket
+     IP protocol family (PF_INET)
+     UDP protocol (SOCK_DGRAM)
+  */
+
+  if ((ld = socket( PF_INET, SOCK_DGRAM, 0 )) < 0) {
+    printf("Problem creating socket\n");
+    exit(1);
+  }
+
+  /* establish our address
+     address family is AF_INET
+     our IP address is INADDR_ANY (any of our IP addresses)
+     the port number is assigned by the kernel
+  */
+
+  skaddr.sin_family = AF_INET;
+  skaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+  skaddr.sin_port = htons(12345); // 0 for the kernel to choose random
+
+  if (bind(ld, (struct sockaddr *) &skaddr, sizeof(skaddr))<0) {
+    printf("Problem binding\n");
+    exit(0);
+  }
+
+  /* find out what port we were assigned and print it out */
+
+  length = sizeof( skaddr );
+  if (getsockname(ld, (struct sockaddr *) &skaddr, &length)<0) {
+    printf("Error getsockname\n");
+    exit(1);
+  }
+
+  /* port number's are network byte order, we have to convert to
+     host byte order before printing !
+  */
+  printf("The server UDP port number is %d\n",ntohs(skaddr.sin_port));
+
+  /* Go echo every datagram we get */
+  echo(ld);
+}
+
 int main (int argc, char *argv[])
 {
   enable_raw_mode ();
   init_world ();
+  udp_listen ();
 
   if (argc >= 2)
     {
