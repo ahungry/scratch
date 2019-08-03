@@ -52,10 +52,11 @@ typedef struct erow
 struct world_atom
 {
   int cx, cy;
+  int rowoff;
   int rows;
   int cols;
   int numrows;
-  erow row;
+  erow *row;
   struct termios orig_termios;
 };
 
@@ -307,6 +308,20 @@ void do_padding (struct abuf *ab, int pad)
   while (pad--) ab_append (ab, " ", 1);
 }
 
+/** row operations **/
+
+void editor_append_row (char *s, size_t len)
+{
+  world.row = realloc (world.row, sizeof (erow) * (world.numrows + 1));
+
+  int at = world.numrows;
+  world.row[at].size = len;
+  world.row[at].chars = malloc (len + 1);
+  memcpy (world.row[at].chars, s, len);
+  world.row[at].chars[len] = '\0';
+  world.numrows++;
+}
+
 /** file i/o **/
 void editor_open (char *filename)
 {
@@ -316,19 +331,16 @@ void editor_open (char *filename)
   char *line = NULL;
   size_t linecap = 0;
   ssize_t linelen;
-  linelen = getline (&line, &linecap, fp);
-
-  if (linelen != -1)
+  while ((linelen = getline (&line, &linecap, fp)) != -1)
     {
-      while (linelen > 0 && (line[linelen -1] == '\n' ||
-                             line[linelen -1] == '\r'))
-        linelen--;
+      if (linelen != -1)
+        {
+          while (linelen > 0 && (line[linelen -1] == '\n' ||
+                                 line[linelen -1] == '\r'))
+            linelen--;
 
-      world.row.size = linelen;
-      world.row.chars = malloc (linelen + 1);
-      memcpy (world.row.chars, line, linelen);
-      world.row.chars[linelen] = '\0';
-      world.numrows = 1;
+          editor_append_row (line, linelen);
+        }
     }
   free (line);
   fclose (fp);
@@ -336,12 +348,26 @@ void editor_open (char *filename)
 
 /** output **/
 
+void editor_scroll ()
+{
+  if (world.cy < world.rowoff)
+    {
+      world.rowoff = world.cy;
+    }
+
+  if (world.cy >= world.rowoff + world.rows)
+    {
+      world.rowoff = world.cy - world.rows + 1;
+    }
+}
+
 int get_out_col_max (int n) { return n > world.cols ? world.cols : n; }
 
-void out_row (struct abuf *ab)
+void out_row_contents (struct abuf *ab, int y)
 {
-  int n = get_out_col_max (world.row.size);
-  ab_append (ab, world.row.chars, n);
+  int len = world.row[y].size;
+  int n = get_out_col_max (len);
+  ab_append (ab, world.row[y].chars, n);
 }
 
 void out_welcome (struct abuf *ab)
@@ -367,15 +393,17 @@ void out_welcome_or_append (abuf *ab, int y, int numrows, int rows)
     }
 }
 
-void out_row_or_beyond_buffer (abuf *ab, int y, int numrows, int rows)
+void out_row_or_beyond_buffer (abuf *ab, int y, int numrows, int rows, int rowoff)
 {
-  if (y >= numrows)
+  int filerow = y + rowoff;
+
+  if (filerow >= numrows)
     {
       out_welcome_or_append (ab, y, numrows, rows);
     }
   else
     {
-      out_row (ab);
+      out_row_contents (ab, filerow);
     }
 }
 
@@ -393,7 +421,7 @@ void editor_draw_rows (struct abuf *ab)
 
   for (y = 0; y < world.rows; y++)
     {
-      out_row_or_beyond_buffer (ab, y, world.numrows, world.rows);
+      out_row_or_beyond_buffer (ab, y, world.numrows, world.rows, world.rowoff);
       clear_row (ab);
       out_maybe_eol (ab, y, world.rows);
     }
@@ -401,6 +429,8 @@ void editor_draw_rows (struct abuf *ab)
 
 void editor_refresh_screen ()
 {
+  editor_scroll ();
+
   struct abuf ab = ABUF_INIT;
 
   // Ultimately, the rows we draw etc. we would receive
@@ -442,7 +472,7 @@ void editor_move_cursor (int key)
       break;
 
     case ARROW_DOWN:
-      if (world.cy != world.rows - 1)
+      if (world.cy < world.numrows)
         {
           world.cy++;
         }
@@ -502,7 +532,9 @@ void init_world ()
 {
   world.cx = 10;
   world.cy = 10;
+  world.rowoff = 0;
   world.numrows = 0;
+  world.row = NULL;
 
   if (get_window_size (&world.rows, &world.cols) == -1) die("get_window_size");
 }
