@@ -2,6 +2,10 @@
 
 /** includes **/
 
+#define _DEFAULT_SOURCE
+#define _BSD_SOURCE
+#define _GNU_SOURCE
+
 #include <ctype.h>
 #include <errno.h>
 #include <math.h>
@@ -304,16 +308,30 @@ void do_padding (struct abuf *ab, int pad)
 }
 
 /** file i/o **/
-void editor_open ()
+void editor_open (char *filename)
 {
-  char *line = "Hello, world!";
-  ssize_t linelen = 13;
+  FILE *fp = fopen (filename, "r");
+  if (!fp) die("fopen");
 
-  world.row.size = linelen;
-  world.row.chars = malloc (linelen + 1);
-  memcpy (world.row.chars, line, linelen);
-  world.row.chars[linelen] = '\0';
-  world.numrows = 1;
+  char *line = NULL;
+  size_t linecap = 0;
+  ssize_t linelen;
+  linelen = getline (&line, &linecap, fp);
+
+  if (linelen != -1)
+    {
+      while (linelen > 0 && (line[linelen -1] == '\n' ||
+                             line[linelen -1] == '\r'))
+        linelen--;
+
+      world.row.size = linelen;
+      world.row.chars = malloc (linelen + 1);
+      memcpy (world.row.chars, line, linelen);
+      world.row.chars[linelen] = '\0';
+      world.numrows = 1;
+    }
+  free (line);
+  fclose (fp);
 }
 
 /** output **/
@@ -336,9 +354,9 @@ void out_welcome (struct abuf *ab)
   ab_append (ab, w, wlen);
 }
 
-void out_welcome_or_append (abuf *ab, int y, int rows)
+void out_welcome_or_append (abuf *ab, int y, int numrows, int rows)
 {
-  if (y == rows / 3)
+  if (numrows == 0 && y == rows / 3)
     {
       out_welcome (ab);
     }
@@ -353,7 +371,7 @@ void out_row_or_beyond_buffer (abuf *ab, int y, int numrows, int rows)
 {
   if (y >= numrows)
     {
-      out_welcome_or_append (ab, y, rows);
+      out_welcome_or_append (ab, y, numrows, rows);
     }
   else
     {
@@ -489,11 +507,15 @@ void init_world ()
   if (get_window_size (&world.rows, &world.cols) == -1) die("get_window_size");
 }
 
-int main ()
+int main (int argc, char *argv[])
 {
   enable_raw_mode ();
   init_world ();
-  editor_open ();
+
+  if (argc >= 2)
+    {
+      editor_open (argv[1]);
+    }
 
   while (1)
     {
