@@ -182,9 +182,11 @@ void enable_raw_mode ()
 
   struct termios raw = world.orig_termios;
   raw.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
-  raw.c_oflag &= ~(OPOST);
+  // Changes \n into \r\n as default when left off
+  // raw.c_oflag &= ~(OPOST);
   raw.c_cflag |= (CS8);
-  raw.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG);
+  // raw.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG);
+  raw.c_lflag &= ~(ECHO | ICANON | IEXTEN);
   raw.c_cc[VMIN] = 0;
   raw.c_cc[VTIME] = 1; // Every 10th of second redraw / skip the read (stop block).
 
@@ -378,7 +380,7 @@ void echo (int sd)
         // from a remote data source, and run the refresh on receipt of it.
         cursor_hide (&ab);
         clear_and_reposition (&ab);
-        ab_append (&ab, bufin, len);
+        ab_append (&ab, bufin, strlen (bufin));
         // editor_draw_rows (&ab);
         cursor_goto (&ab, world.cx, world.cy);
         cursor_show (&ab);
