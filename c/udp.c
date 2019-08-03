@@ -37,7 +37,7 @@ void echo( int sd ) {
       if (n<0) {
         perror("Error receiving data");
       } else {
-        printf("GOT %d BYTES\n",n);
+        printf("GOT %d BYTES (%s)\n",n, bufin);
         /* Got something, just send it back */
         sendto(sd,bufin,n,0,(struct sockaddr *)&remote,len);
       }
@@ -69,7 +69,7 @@ int main() {
 
   skaddr.sin_family = AF_INET;
   skaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-  skaddr.sin_port = htons(12345); // 0 for the kernel to choose random
+  skaddr.sin_port = htons(12346); // 0 for the kernel to choose random
 
   if (bind(ld, (struct sockaddr *) &skaddr, sizeof(skaddr))<0) {
     printf("Problem binding\n");

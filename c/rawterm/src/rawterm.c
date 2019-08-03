@@ -13,6 +13,7 @@
 #include <math.h>
 #include <netdb.h>      /* gethostbyname */
 #include <netinet/in.h> /* INET constants and stuff */
+#include <pthread.h>
 #include <stdio.h>      /* standard C i/o facilities */
 #include <stdlib.h>     /* needed for atoi() */
 #include <string.h>
@@ -213,6 +214,65 @@ int get_window_size (int *rows, int *cols)
     }
 }
 
+// TODO Do not hardcode the outbound etc
+int get_socket_fd (struct addrinfo** return_res)
+{
+  const char* hostname = "127.0.0.1"; /* localhost */
+  const char* portname = "12346";
+  struct addrinfo hints;
+  memset (&hints, 0, sizeof (hints));
+  hints.ai_family = AF_UNSPEC;
+  hints.ai_socktype = SOCK_DGRAM;
+  hints.ai_protocol = 0;
+  hints.ai_flags = AI_ADDRCONFIG;
+  struct addrinfo* res = 0;
+  int err = getaddrinfo (hostname, portname, &hints, &res);
+  if (err != 0) die("getaddrinfo");
+  int fd = socket (res->ai_family, res->ai_socktype, res->ai_protocol);
+  if (fd == -1) die("socket");
+
+  // Return the res by setting in place
+  *return_res = res;
+
+  /* const char content[30] = "Hello world"; */
+  /* if (sendto (fd, content, sizeof (content), 0, */
+  /*             res->ai_addr, res->ai_addrlen) == -1) */
+  /*   { */
+  /*     die("sendto"); */
+  /*   } */
+
+  // send_udp (fd, res);
+
+  return fd;
+}
+
+// Fire and forget some udp (we don't get anything back)
+void send_udp (int fd, struct addrinfo* res, int c)
+{
+  char buf[32];
+
+  snprintf (buf, sizeof (buf), "%x", c);
+
+  if (sendto (fd, buf, strlen (buf), 0,
+              res->ai_addr, res->ai_addrlen) == -1)
+    {
+      die("sendto");
+    }
+}
+
+// Receive a udp we previously sent out
+void receive_udp (int fd, struct addrinfo* res)
+{
+  int n;
+  char buf[100];
+  uint len;
+  len = sizeof (res);
+  n = recvfrom (fd, buf, 100, 0, (struct sockaddr *) &res, &len);
+
+  if (n < 0) die("recvfrom");
+  printf ("Got %d bytes\n", n);
+}
+
 int editor_read_key ()
 {
   int nread;
@@ -328,6 +388,10 @@ void editor_process_keypress ()
   int c = editor_read_key ();
 
   // Here we go
+  struct addrinfo* res = 0;
+  int fd = get_socket_fd (&res);
+  send_udp (fd, res, c);
+  // receive_udp (fd, res);
 }
 
 
@@ -392,7 +456,8 @@ void echo (int sd)
     }
 }
 
-void udp_listen ()
+void *
+udp_listen ()
 {
   int ld;
   struct sockaddr_in skaddr;
@@ -438,13 +503,17 @@ void udp_listen ()
 
   /* Go echo every datagram we get */
   echo(ld);
+
+  return NULL;
 }
 
 int main (int argc, char *argv[])
 {
+  pthread_t pth;
+  pthread_create (&pth, NULL, udp_listen, NULL);
   enable_raw_mode ();
   init_world ();
-  udp_listen ();
+  // udp_listen ();
 
   if (argc >= 2)
     {
@@ -454,7 +523,7 @@ int main (int argc, char *argv[])
 
   while (1)
     {
-      editor_refresh_screen ();
+      // editor_refresh_screen ();
       editor_process_keypress ();
     }
 

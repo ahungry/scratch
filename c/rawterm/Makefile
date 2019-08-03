@@ -1,5 +1,5 @@
 CFLAGS=-Wall -Wextra -pedantic -std=c99
-LFLAGS=-lm -ldl
+LFLAGS=-lm -ldl -pthread
 
 SRC := src
 OBJ := obj
