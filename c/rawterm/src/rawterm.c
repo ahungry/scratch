@@ -428,13 +428,13 @@ void echo (int sd)
       n=recvfrom(sd,bufin,MAXBUF,0,(struct sockaddr *)&remote,&len);
 
       /* print out the address of the sender */
-      printf("Got a datagram from %s port %d\n",
-             inet_ntoa(remote.sin_addr), ntohs(remote.sin_port));
+      /* printf("Got a datagram from %s port %d\n", */
+      /*        inet_ntoa(remote.sin_addr), ntohs(remote.sin_port)); */
 
       if (n<0) {
         perror("Error receiving data");
       } else {
-        printf("GOT %d BYTES\n",n);
+        // printf("GOT %d BYTES\n",n);
         /* Got something, just send it back */
         sendto(sd,bufin,n,0,(struct sockaddr *)&remote,len);
 
@@ -499,7 +499,7 @@ udp_listen ()
   /* port number's are network byte order, we have to convert to
      host byte order before printing !
   */
-  printf("The server UDP port number is %d\n",ntohs(skaddr.sin_port));
+  // printf("The server UDP port number is %d\n",ntohs(skaddr.sin_port));
 
   /* Go echo every datagram we get */
   echo(ld);
@@ -518,7 +518,7 @@ int main (int argc, char *argv[])
   if (argc >= 2)
     {
       // editor_open (argv[1]);
-      printf ("%s", argv[1]);
+      // printf ("%s", argv[1]);
     }
 
   while (1)
