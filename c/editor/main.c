@@ -63,11 +63,11 @@ struct world_atom world;
 
 // https://stackoverflow.com/questions/8257714/how-to-convert-an-int-to-string-in-c#8257728
 
-struct abuf
+typedef struct abuf
 {
   char *b;
   int len;
-};
+} abuf;
 
 #define ABUF_INIT {NULL, 0}
 
@@ -317,42 +317,67 @@ void editor_open ()
 }
 
 /** output **/
+
+int get_out_col_max (int n) { return n > world.cols ? world.cols : n; }
+
+void out_row (struct abuf *ab)
+{
+  int n = get_out_col_max (world.row.size);
+  ab_append (ab, world.row.chars, n);
+}
+
+void out_welcome (struct abuf *ab)
+{
+  char w[80];
+  int wlen = snprintf (w, sizeof (w), "xxx -- version %s", MY_VERSION);
+  wlen = get_out_col_max (wlen);
+  int padding = get_padding (world.cols, wlen);
+  do_padding (ab, padding);
+  ab_append (ab, w, wlen);
+}
+
+void out_welcome_or_append (abuf *ab, int y, int rows)
+{
+  if (y == rows / 3)
+    {
+      out_welcome (ab);
+    }
+  else
+    {
+      // Write empty line marker
+      ab_append (ab, "~", 1);
+    }
+}
+
+void out_row_or_beyond_buffer (abuf *ab, int y, int numrows, int rows)
+{
+  if (y >= numrows)
+    {
+      out_welcome_or_append (ab, y, rows);
+    }
+  else
+    {
+      out_row (ab);
+    }
+}
+
+void out_maybe_eol (abuf *ab, int y, int rows)
+{
+  if (y < rows - 1)
+    {
+      ab_append (ab, "\r\n", 2);
+    }
+}
+
 void editor_draw_rows (struct abuf *ab)
 {
   int y;
 
   for (y = 0; y < world.rows; y++)
     {
-      if (y >= world.numrows)
-        {
-          if (y == world.rows / 3)
-            {
-              char welcome[80];
-              int welcomelen = snprintf (welcome,  sizeof (welcome),
-                                         "xxx -- version %s", MY_VERSION);
-              if (welcomelen > world.cols) welcomelen = world.cols;
-              int padding = get_padding (world.cols, welcomelen);
-              do_padding (ab, padding);
-              ab_append (ab, welcome, welcomelen);
-            }
-          else
-            {
-              // Write empty line marker
-              ab_append (ab, "~", 1);
-            }
-        }
-      else
-        {
-          int len = world.row.size;
-          if (len > world.cols) len = world.cols;
-          ab_append (ab, world.row.chars, len);
-        }
+      out_row_or_beyond_buffer (ab, y, world.numrows, world.rows);
       clear_row (ab);
-
-      if (y < world.rows -1)
-        {
-          ab_append (ab, "\r\n", 2);
-        }
+      out_maybe_eol (ab, y, world.rows);
     }
 }
 
