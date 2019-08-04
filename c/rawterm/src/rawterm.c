@@ -57,6 +57,9 @@ typedef struct erow
 
 struct world_atom
 {
+  char *udp_out_host;
+  char *udp_out_port;
+  char *udp_listen_port;
   int cx, cy;
   int rowoff;
   int rows;
@@ -217,8 +220,10 @@ int get_window_size (int *rows, int *cols)
 // TODO Do not hardcode the outbound etc
 int get_socket_fd (struct addrinfo** return_res)
 {
-  const char* hostname = "127.0.0.1"; /* localhost */
-  const char* portname = "12346";
+  char* hostname = world.udp_out_host;
+  char* portname = world.udp_out_port;
+  /* const char* hostname = "127.0.0.1"; /\* localhost *\/ */
+  /* const char* portname = "12346"; */
   struct addrinfo hints;
   memset (&hints, 0, sizeof (hints));
   hints.ai_family = AF_UNSPEC;
@@ -416,7 +421,6 @@ void init_world ()
 void echo (int sd)
 {
     uint len;
-    int n;
     char bufin[MAXBUF];
     struct sockaddr_in remote;
 
@@ -426,6 +430,8 @@ void echo (int sd)
     len = sizeof(remote);
 
     while (1) {
+      int n;
+
       /* read a datagram from the socket (put result in bufin) */
       n=recvfrom(sd,bufin,MAXBUF,0,(struct sockaddr *)&remote,&len);
 
@@ -481,9 +487,11 @@ udp_listen ()
      the port number is assigned by the kernel
   */
 
+  int listen_port = atoi (world.udp_listen_port);
+
   skaddr.sin_family = AF_INET;
   skaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-  skaddr.sin_port = htons(12345); // 0 for the kernel to choose random
+  skaddr.sin_port = htons(listen_port); // 0 for the kernel to choose random
 
   if (bind(ld, (struct sockaddr *) &skaddr, sizeof(skaddr))<0) {
     printf("Problem binding\n");
@@ -517,11 +525,15 @@ int main (int argc, char *argv[])
   init_world ();
   // udp_listen ();
 
-  if (argc >= 2)
+  if (argc < 4)
     {
-      // editor_open (argv[1]);
-      // printf ("%s", argv[1]);
+      printf ("Too few arguments, please start with ./rawterm <listen port> <outbound host> <outbound port>\n");
+      exit (1);
     }
+
+  world.udp_listen_port = argv[1];
+  world.udp_out_host = argv[2];
+  world.udp_out_port = argv[3];
 
   while (1)
     {
