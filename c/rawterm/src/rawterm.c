@@ -249,11 +249,10 @@ int get_socket_fd (struct addrinfo** return_res)
 // Fire and forget some udp (we don't get anything back)
 void send_udp (int fd, struct addrinfo* res, int c)
 {
-  char buf[32];
+  char buf[1];
+  buf[0] = c;
 
-  snprintf (buf, sizeof (buf), "%x", c);
-
-  if (sendto (fd, buf, strlen (buf), 0,
+  if (sendto (fd, buf, sizeof (buf), 0,
               res->ai_addr, res->ai_addrlen) == -1)
     {
       die("sendto");
@@ -303,8 +302,8 @@ int editor_read_key ()
                     case '1': return HOME_KEY;
                     case '3': return DEL_KEY;
                     case '4': return END_KEY;
-                    case '5': return  PAGE_UP;
-                    case '6': return  PAGE_DOWN;
+                    case '5': return PAGE_UP;
+                    case '6': return PAGE_DOWN;
                     case '7': return HOME_KEY;
                     case '8': return END_KEY;
                     }

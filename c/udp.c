@@ -37,7 +37,7 @@ void echo( int sd ) {
       if (n<0) {
         perror("Error receiving data");
       } else {
-        printf("GOT %d BYTES (%s)\n",n, bufin);
+        printf("GOT %d BYTES (%s / %x)\n", n, bufin, bufin[0]);
         /* Got something, just send it back */
         sendto(sd,bufin,n,0,(struct sockaddr *)&remote,len);
       }
