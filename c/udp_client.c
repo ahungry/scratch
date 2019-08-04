@@ -75,6 +75,12 @@ void receive_udp (int fd, struct addrinfo* res)
 
 int main (int argc, char *argv[])
 {
+  if (argc < 2)
+    {
+      printf ("Please pass in a string to send!\n");
+      exit (1);
+    }
+
   struct addrinfo* res = 0;
   int fd = get_socket_fd (&res);
   send_udp (fd, res, argv[1]);
