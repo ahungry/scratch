@@ -51,9 +51,10 @@ int get_socket_fd (struct addrinfo** return_res)
 void send_udp (int fd, struct addrinfo* res, char *s)
 {
   // const char content[30] = "Hello world";
-  char content[30];
-  memcpy (content, s, strlen (s));
-  if (sendto (fd, content, sizeof (content), 0,
+  // char content[30];
+  char *content = s;
+  // memcpy (content, s, strlen (s));
+  if (sendto (fd, content, strlen (content), 0,
               res->ai_addr, res->ai_addrlen) == -1)
     {
       die("sendto");
