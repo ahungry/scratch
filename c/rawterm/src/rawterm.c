@@ -104,6 +104,7 @@ void ab_write (struct abuf *ab)
 void ab_free (struct abuf *ab)
 {
   free (ab->b);
+  ab->len = 0;
 }
 
 int get_byte_size_of_int_as_char (int n)
