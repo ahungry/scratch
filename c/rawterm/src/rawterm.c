@@ -272,6 +272,9 @@ void receive_udp (int fd, struct addrinfo* res)
   printf ("Got %d bytes\n", n);
 }
 
+// Some of the incoming keys have more than 1 byte, even up to 2 or 3.
+// This handles parsing the bytes that follow an escape sequence, then
+// map them to special outbound enumerations.
 int editor_read_key ()
 {
   int nread;
