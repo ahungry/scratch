@@ -4,3 +4,5 @@ node_modules/
 /mercury/*.err
 /mercury/*.mh
 /mercury/*.
+
+*vgcore*

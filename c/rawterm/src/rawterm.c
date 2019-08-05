@@ -372,7 +372,14 @@ int get_cursor_position (int *rows, int *cols)
 /** output **/
 void editor_draw_rows (struct abuf *ab)
 {
-  ab_append (ab, "Hello world", 11);
+  int y;
+
+  for (y = 0; y < world.rows; y++)
+    {
+      // out_row_or_beyond_buffer (ab, y, world.numrows, world.rows, world.rowoff);
+      clear_row (ab);
+      // out_maybe_eol (ab, y, world.rows);
+    }
 }
 
 void editor_refresh_screen ()
@@ -422,7 +429,6 @@ void init_world ()
 void echo (int sd)
 {
     uint len;
-    char bufin[MAXBUF];
     struct sockaddr_in remote;
 
     /* need to know how big address struct is, len must be set before the
@@ -431,37 +437,39 @@ void echo (int sd)
     len = sizeof(remote);
 
     while (1) {
-      int n;
+      char bufin[MAXBUF];
+      int n; // Received bytes
 
       /* read a datagram from the socket (put result in bufin) */
-      n=recvfrom(sd,bufin,MAXBUF,0,(struct sockaddr *)&remote,&len);
+      n = recvfrom(sd, bufin, MAXBUF, 0, (struct sockaddr *) &remote, &len);
 
       /* print out the address of the sender */
       /* printf("Got a datagram from %s port %d\n", */
       /*        inet_ntoa(remote.sin_addr), ntohs(remote.sin_port)); */
 
-      if (n<0) {
-        perror("Error receiving data");
-      } else {
-        // printf("GOT %d BYTES\n",n);
-        /* Got something, just send it back */
-        sendto(sd,bufin,n,0,(struct sockaddr *)&remote,len);
+      if (n < 0)
+        {
+          perror ("Error receiving data");
+        }
+      else
+        {
+          // printf("GOT %d BYTES\n",n);
+          /* Got something, just send it back */
+          sendto (sd, bufin, n, 0, (struct sockaddr *) &remote,len);
 
-        struct abuf ab = ABUF_INIT;
+          struct abuf ab = ABUF_INIT;
 
-        // Ultimately, the rows we draw etc. we would receive
-        // from a remote data source, and run the refresh on receipt of it.
-        cursor_hide (&ab);
-        clear_and_reposition (&ab);
-        ab_append (&ab, bufin, strlen (bufin));
-        // editor_draw_rows (&ab);
-        cursor_goto (&ab, world.cx, world.cy);
-        cursor_show (&ab);
+          // Ultimately, the rows we draw etc. we would receive
+          // from a remote data source, and run the refresh on receipt of it.
+          cursor_hide (&ab);
+          clear_and_reposition (&ab);
+          cursor_goto (&ab, world.cx, world.cy); // 0,0
+          ab_append (&ab, bufin, n); // Append all received bytes
+          cursor_show (&ab);
 
-        ab_write (&ab);
-        ab_free (&ab);
-
-      }
+          ab_write (&ab);
+          ab_free (&ab);
+        }
     }
 }
 
