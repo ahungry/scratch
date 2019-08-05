@@ -1,4 +1,5 @@
 #include "term.h"
+#include "world.h"
 
 // clear everything at end of row
 void
