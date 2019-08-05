@@ -129,6 +129,9 @@ editor_process_keypress ()
   // Here we go
   struct addrinfo* res = 0;
   int fd = get_socket_fd (&res);
+
   send_udp (fd, res, c);
+
+  close (fd);
   // receive_udp (fd, res);
 }
