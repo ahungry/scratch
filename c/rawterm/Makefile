@@ -12,3 +12,6 @@ rawterm.bin: $(OBJECTS)
 
 $(OBJ)/%.o: $(SRC)/%.c
 	$(CC) $(CFLAGS) -I$(SRC) -c $< -o $@
+
+run: rawterm.bin
+	./$< 12345 127.0.0.1 12346
