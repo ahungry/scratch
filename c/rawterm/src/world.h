@@ -28,6 +28,9 @@ struct world_atom
 
 typedef struct world_atom world_atom;
 
+void
+init_world ();
+
 world_atom world;
 
 #endif

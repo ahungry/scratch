@@ -16,6 +16,9 @@ struct abuf
 };
 typedef struct abuf abuf;
 
+// Acts like a constructor
+#define ABUF_INIT {NULL, 0}
+
 void
 die (const char *s);
 

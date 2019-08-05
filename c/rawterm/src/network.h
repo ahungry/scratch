@@ -30,4 +30,10 @@ get_socket_fd (struct addrinfo** return_res);
 void
 send_udp (int fd, struct addrinfo* res, int c);
 
+void
+echo (int sd);
+
+void *
+udp_listen ();
+
 #endif
