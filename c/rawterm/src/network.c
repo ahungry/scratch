@@ -155,3 +155,16 @@ udp_listen ()
 
   return NULL;
 }
+
+void
+receive_udp (int fd, struct addrinfo* res)
+{
+  int n;
+  char buf[100];
+  uint len;
+  len = sizeof (res);
+  n = recvfrom (fd, buf, 100, 0, (struct sockaddr *) &res, &len);
+
+  if (n < 0) die("recvfrom");
+  printf ("Got %d bytes\n", n);
+}

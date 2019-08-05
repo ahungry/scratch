@@ -36,4 +36,7 @@ echo (int sd);
 void *
 udp_listen ();
 
+void
+receive_udp (int fd, struct addrinfo* res);
+
 #endif
