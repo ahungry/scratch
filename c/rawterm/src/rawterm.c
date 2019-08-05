@@ -23,10 +23,16 @@
 #include <termios.h>
 #include <unistd.h>     /* defines STDIN_FILENO, system calls,etc */
 
+#include "util.h"
+#include "term.h"
+
 /** defines **/
 
 #define MY_VERSION "0.0.1"
 #define CTRL_KEY(k) ((k) & 0x1f)
+
+// Acts like a constructor
+#define ABUF_INIT {NULL, 0}
 
 enum editor_key
   {
@@ -43,17 +49,17 @@ enum editor_key
 
 /** declarations **/
 
-void die (const char *s);
 int editor_read_key ();
 int get_cursor_position (int *rows, int *cols);
 
 /** data **/
 
-typedef struct erow
+struct erow
 {
   int size;
   char *chars;
-} erow;
+};
+typedef struct erow erow;
 
 struct world_atom
 {
@@ -71,108 +77,7 @@ struct world_atom
 
 struct world_atom world;
 
-/** util **/
-
-// COL / ROW
-
-// https://stackoverflow.com/questions/8257714/how-to-convert-an-int-to-string-in-c#8257728
-
-typedef struct abuf
-{
-  char *b;
-  int len;
-} abuf;
-
-#define ABUF_INIT {NULL, 0}
-
-void ab_append (struct abuf *ab, const char *s, int len)
-{
-  char *new = realloc (ab->b, ab->len + len);
-
-  if (new == NULL) return;
-
-  memcpy (&new[ab->len], s, len);
-  ab->b = new;
-  ab->len += len;
-}
-
-void ab_write (struct abuf *ab)
-{
-  write (STDOUT_FILENO, ab->b, ab->len);
-}
-
-void ab_free (struct abuf *ab)
-{
-  free (ab->b);
-  ab->len = 0;
-}
-
-int get_byte_size_of_int_as_char (int n)
-{
-  return (int) ((ceil (log10 (n)) + 1) * sizeof (char));
-}
-
-// clear everything at end of row
-void clear_row (struct abuf *ab)
-{
-  ab_append (ab, "\x1b[K", 3);
-}
-
-void cursor_hide (struct abuf *ab)
-{
-  ab_append (ab, "\x1b[?25l", 6);
-}
-
-void cursor_show (struct abuf *ab)
-{
-  ab_append (ab, "\x1b[?25h", 6);
-}
-
-// TODO: Ensure x or y does not go out of bounds of window.
-void cursor_goto (struct abuf *ab, int x, int y)
-{
-  char buf[32];
-
-  snprintf (buf, sizeof (buf), "\x1b[%d;%dH", y + 1, x + 1);
-  ab_append (ab, buf, strlen (buf));
-}
-
-// TODO: What didn't it like about this?
-void xcursor_goto (struct abuf *ab, int x, int y)
-{
-  int xlen = get_byte_size_of_int_as_char (x);
-  int ylen = get_byte_size_of_int_as_char (y);
-  int olen = 4; // \x1b [ H, and the ;
-  int len = xlen + ylen + olen;
-  char str[len]; // Slot for \x1b[_;_H
-
-  sprintf (str, "\x1b[%d;%dH", x, y);
-  // write (STDOUT_FILENO, str, len); // Position cursor 12;40H would center on an 80x24 size
-  ab_append (ab, str, len);
-}
-
-void clear_screen (struct abuf *ab)
-{
-  ab_append (ab, "\x1b[2J", 4); // Clear screen
-}
-
-void clear_and_reposition (struct abuf *ab)
-{
-  clear_screen (ab);
-  cursor_goto (ab, 1, 1);
-}
-
 /** terminal **/
-
-void die (const char *s)
-{
-  struct abuf ab = ABUF_INIT;
-
-  clear_and_reposition (&ab);
-  ab_free (&ab);
-  perror (s);
-  exit (1);
-}
 
 void disable_raw_mode ()
 {
@@ -457,7 +362,7 @@ void echo (int sd)
           /* Got something, just send it back */
           sendto (sd, bufin, n, 0, (struct sockaddr *) &remote,len);
 
-          struct abuf ab = ABUF_INIT;
+          abuf ab = ABUF_INIT;
 
           // Ultimately, the rows we draw etc. we would receive
           // from a remote data source, and run the refresh on receipt of it.
