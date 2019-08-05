@@ -13,6 +13,7 @@ rawterm.bin: $(OBJECTS)
 $(OBJ)/%.o: $(SRC)/%.c
 	$(CC) $(CFLAGS) -I$(SRC) -c $< -o $@
 
+# Runs and sends keypress to itself
 run: rawterm.bin
 	reset
-	./$< 12345 127.0.0.1 12346
+	./$< 12345 127.0.0.1 12345

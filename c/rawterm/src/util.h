@@ -1,6 +1,14 @@
 #ifndef RT_UTIL_H
 #define RT_UTIL_H
 
+#include <errno.h>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <termios.h>
+#include <unistd.h>     /* defines STDIN_FILENO, system calls,etc */
+
 struct abuf
 {
   char *b;

@@ -25,6 +25,7 @@
 
 #include "util.h"
 #include "term.h"
+#include "world.h"
 
 /** defines **/
 
@@ -54,74 +55,8 @@ int get_cursor_position (int *rows, int *cols);
 
 /** data **/
 
-struct erow
-{
-  int size;
-  char *chars;
-};
-typedef struct erow erow;
-
-struct world_atom
-{
-  char *udp_out_host;
-  char *udp_out_port;
-  char *udp_listen_port;
-  int cx, cy;
-  int rowoff;
-  int rows;
-  int cols;
-  int numrows;
-  erow *row;
-  struct termios orig_termios;
-};
-
-struct world_atom world;
 
 /** terminal **/
-
-void disable_raw_mode ()
-{
-  if (-1 == tcsetattr (STDIN_FILENO, TCSAFLUSH, &world.orig_termios))
-    die ("tcsetattr");
-}
-
-void enable_raw_mode ()
-{
-  if (-1 == tcgetattr (STDIN_FILENO, &world.orig_termios)) die("tcgetattr");
-  atexit (disable_raw_mode);
-
-  struct termios raw = world.orig_termios;
-  raw.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
-  // Changes \n into \r\n as default when left off
-  // raw.c_oflag &= ~(OPOST);
-  raw.c_cflag |= (CS8);
-  // raw.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG);
-  raw.c_lflag &= ~(ECHO | ICANON | IEXTEN);
-  raw.c_cc[VMIN] = 0;
-  raw.c_cc[VTIME] = 1; // Every 10th of second redraw / skip the read (stop block).
-
-  if (-1 == tcsetattr (STDIN_FILENO, TCSAFLUSH, &raw)) die("tcsetattr");
-}
-
-int get_window_size (int *rows, int *cols)
-{
-  struct winsize ws;
-
-  if (ioctl (STDOUT_FILENO, TIOCGWINSZ, &ws) == -1 || ws.ws_col == 0)
-    {
-      // Fallback for non-ioctl supporting systems
-      if (write (STDOUT_FILENO, "\x1b[999C\x1b[999B", 12) != 12) return -1;
-
-      return get_cursor_position (rows, cols);
-    }
-  else
-    {
-      *cols = ws.ws_col;
-      *rows = ws.ws_row;
-
-      return 0;
-    }
-}
 
 // TODO Do not hardcode the outbound etc
 int get_socket_fd (struct addrinfo** return_res)
@@ -250,28 +185,6 @@ int editor_read_key ()
     }
 
   return c;
-}
-
-int get_cursor_position (int *rows, int *cols)
-{
-  char buf[32];
-  unsigned int i = 0;
-
-  if (write (STDOUT_FILENO, "\x1b[6n", 4) != 4) return -1;
-
-  while (i < sizeof (buf) - 1)
-    {
-      if (read (STDIN_FILENO, &buf[i], 1) != 1) break;
-      if (buf[i] == 'R') break;
-      i++;
-    }
-  buf[i] = '\0';
-
-  // printf ("\r\n&buf[1]: '%s'\r\n", &buf[1]);
-  if (buf[0] != '\x1b' || buf[1] != '[') return -1;
-  if (sscanf (&buf[2], "%d;%d", rows, cols) != 2) return -1;
-
-  return 0;
 }
 
 /** output **/
