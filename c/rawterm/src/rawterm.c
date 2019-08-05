@@ -424,7 +424,7 @@ void init_world ()
 }
 
 // Listen for incoming events.
-#define MAXBUF 1024*1024
+#define MAXBUF 1024 * 1024
 
 void echo (int sd)
 {
@@ -434,14 +434,14 @@ void echo (int sd)
     /* need to know how big address struct is, len must be set before the
        call to recvfrom!!! */
 
-    len = sizeof(remote);
+    len = sizeof (remote);
 
     while (1) {
       char bufin[MAXBUF];
       int n; // Received bytes
 
       /* read a datagram from the socket (put result in bufin) */
-      n = recvfrom(sd, bufin, MAXBUF, 0, (struct sockaddr *) &remote, &len);
+      n = recvfrom (sd, bufin, MAXBUF, 0, (struct sockaddr *) &remote, &len);
 
       /* print out the address of the sender */
       /* printf("Got a datagram from %s port %d\n", */
@@ -529,7 +529,6 @@ udp_listen ()
 int main (int argc, char *argv[])
 {
   pthread_t pth;
-  pthread_create (&pth, NULL, udp_listen, NULL);
   enable_raw_mode ();
   init_world ();
   // udp_listen ();
@@ -543,6 +542,8 @@ int main (int argc, char *argv[])
   world.udp_listen_port = argv[1];
   world.udp_out_host = argv[2];
   world.udp_out_port = argv[3];
+
+  pthread_create (&pth, NULL, udp_listen, NULL);
 
   while (1)
     {
