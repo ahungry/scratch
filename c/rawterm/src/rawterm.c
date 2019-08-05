@@ -7,21 +7,7 @@
 #define _BSD_SOURCE
 #define _GNU_SOURCE
 
-#include <arpa/inet.h>  /* IP address conversion stuff */
-#include <ctype.h>
-#include <errno.h>
-#include <math.h>
-#include <netdb.h>      /* gethostbyname */
-#include <netinet/in.h> /* INET constants and stuff */
 #include <pthread.h>
-#include <stdio.h>      /* standard C i/o facilities */
-#include <stdlib.h>     /* needed for atoi() */
-#include <string.h>
-#include <sys/ioctl.h>
-#include <sys/socket.h> /* socket specific definitions */
-#include <sys/types.h>  /* system data type definitions */
-#include <termios.h>
-#include <unistd.h>     /* defines STDIN_FILENO, system calls,etc */
 
 #include "term.h"
 #include "util.h"
