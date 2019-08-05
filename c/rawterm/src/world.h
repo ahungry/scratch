@@ -28,6 +28,4 @@ struct world_atom
 
 typedef struct world_atom world_atom;
 
-world_atom world;
-
 #endif

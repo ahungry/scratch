@@ -1,4 +1,4 @@
-CFLAGS=-Wall -Wextra -pedantic -std=c99
+CFLAGS=-Wall -Wextra -pedantic -std=gnu11
 LFLAGS=-lm -ldl -pthread
 
 SRC := src
