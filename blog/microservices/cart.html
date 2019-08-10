@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Microservices done better</title>
+  </head>
+  <body>
+    <h1>Cart</h1>
+    <ul id="cart-items"></ul>
+  </body>
+  <script src="queues.js"></script>
+  <script>
+   const cart = []
+   sub('::add-item', item => {
+     console.log('Someone wants to add an item', {item})
+     cart.push(item)
+     total()
+   })
+   const total = () => {
+     const price = cart.map(x => x.price).reduce((acc, cur) => acc + cur)
+     const count = cart.length
+     document.getElementById('cart-items').innerHTML = `Price: ${price} for ${count} items.`
+   }
+  </script>
+</html>

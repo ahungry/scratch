@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Microservices done better</title>
+  </head>
+  <body>
+    <h1>Items</h1>
+    <ul id="items"></ul>
+  </body>
+  <script src="queues.js"></script>
+  <script>
+   const items = [
+     {
+       id: uuid(),
+       name: 'Book',
+       price: 9.99,
+     },
+     {
+       id: uuid(),
+       name: 'Candy',
+       price: 0.99,
+     },
+     {
+       id: uuid(),
+       name: 'Computer',
+       price: 999.99,
+     }
+   ]
+
+   const itemToElement = item => {
+     const el = document.createElement('li')
+     el.style.fontWeight = 'bold'
+     el.innerHTML = `${item.name} - ${item.price}`
+     el.id = item.id
+     el.onclick = (e) => {
+       pub('::add-item', {...item, color: '#ef0'})
+    }
+
+     return el
+   }
+
+   const appendItem = (parent, el) => parent.appendChild(el)
+   const parent = document.getElementById('items')
+
+   items.map(itemToElement).forEach(i => appendItem(parent, i))
+  </script>
+</html>
