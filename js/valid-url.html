@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+  <head>
+  </head>
+  <body>
+    Url: <input type="text" name="url" id="url" />
+    Result: <input type="text" name="result" id="result" />
+    <button id="check">Check</button>
+    <div id="wrapper"></div>
+    <script>
+     var els = {
+       check: document.getElementById('check'),
+       result: document.getElementById('result'),
+       url: document.getElementById('url'),
+       wrapper: document.getElementById('wrapper'),
+     }
+
+     const doUrlLookup = () => {
+       var p = new Promise((resolve, reject) => {
+         var to = setTimeout(() => {
+           els.result.value = 'FAIL'
+           reject()
+         }, 3e3)
+
+         var el = document.createElement('iframe')
+         el.src = els.url.value
+         el.addEventListener('load', () => {
+           els.result.value = 'PASS'
+           clearTimeout(to)
+           resolve()
+         })
+         els.wrapper.appendChild(el)
+       })
+     }
+     els.check.addEventListener('click', doUrlLookup)
+    </script>
+  </body>
+</html>
