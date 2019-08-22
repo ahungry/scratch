@@ -1,6 +1,6 @@
 #!/usr/bin/env morbo
 
-# -*- mode: perl -*-
+# -*- mode: perl-mode -*-
 
 # https://mojolicious.org/
 # Get morbo with:
