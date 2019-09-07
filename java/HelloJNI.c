@@ -29,20 +29,22 @@ Java_HelloJNI_addOne (JNIEnv *env, jobject thisObj, jint y)
   return (*env)->NewStringUTF (env, msg);
 }
 
-JNIEXPORT void
+JNIEXPORT jint
 JNICALL
 Java_HelloJNI_fork (JNIEnv *env, jobject thisObj)
 {
   printf ("Fork time!");
 
-  if (fork() == 0)
-    {
-      printf ("I am the child...what will I do??\n");
+  int pid = fork();
 
-      return;
+  if (0 == pid)
+    {
+      printf ("I am the child!\n");
+
+      return pid;
     }
 
-  printf ("And I am not the child, I am the parent!\n");
+  printf ("I am the parent!\n");
 
-  return;
+  return pid;
 }
