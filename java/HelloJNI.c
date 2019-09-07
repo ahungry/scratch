@@ -4,10 +4,11 @@
 #include <stdlib.h>
 #include <stdio.h>      // C Standard IO Header
 #include "HelloJNI.h"   // Generated
+#include <sys/types.h>
+#include <unistd.h>
 
 // Implementation of the native method sayHello()
 JNIEXPORT void
-
 JNICALL
 Java_HelloJNI_sayHello (JNIEnv *env, jobject thisObj)
 {
@@ -16,7 +17,6 @@ Java_HelloJNI_sayHello (JNIEnv *env, jobject thisObj)
 }
 
 JNIEXPORT jstring
-
 JNICALL
 Java_HelloJNI_addOne (JNIEnv *env, jobject thisObj, jint y)
 {
@@ -27,4 +27,22 @@ Java_HelloJNI_addOne (JNIEnv *env, jobject thisObj, jint y)
 
   // return env->NewStringUTF (msg);
   return (*env)->NewStringUTF (env, msg);
+}
+
+JNIEXPORT void
+JNICALL
+Java_HelloJNI_fork (JNIEnv *env, jobject thisObj)
+{
+  printf ("Fork time!");
+
+  if (fork() == 0)
+    {
+      printf ("I am the child...what will I do??\n");
+
+      return;
+    }
+
+  printf ("And I am not the child, I am the parent!\n");
+
+  return;
 }
