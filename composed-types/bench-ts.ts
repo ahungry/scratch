@@ -5002,3 +5002,7 @@ const add4998: NFn = comp(add1, add4997)
 const add4999: NFn = comp(add1, add4998)
 const add5000: NFn = comp(add1, add4999)
 console.log(add5000(1))
+
+type SFn = (s: string) => string
+const string_identity: SFn = s => s
+const oops = comp(string_identity, add5000)

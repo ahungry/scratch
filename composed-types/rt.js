@@ -5010,3 +5010,7 @@ const add4998 = comp(add_one, add4997)
 const add4999 = comp(add_one, add4998)
 const add5000 = comp(add_one, add4999)
 console.log(invoke(add5000)(1))
+
+// How much time to find the error?
+const string_identity = fn(Str, Str, n => n)
+const oops = comp(string_identity, add5000)

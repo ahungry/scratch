@@ -5000,3 +5000,5 @@ var add4998 = comp(add1, add4997);
 var add4999 = comp(add1, add4998);
 var add5000 = comp(add1, add4999);
 console.log(add5000(1));
+var string_identity = function (s) { return s; };
+var oops = comp(string_identity, add5000);

@@ -28,3 +28,18 @@ node bench-ts.js  0.07s user 0.01s system 100% cpu 0.081 total
 time node rt.js
 node rt.js  0.09s user 0.00s system 106% cpu 0.087 total
 ```
+
+## Findings when we introduce an error by hand
+
+```sh
+time node rt.js
+5001
+/home/mcarter/src/scratch/composed-types/rt.js:7
+const err = (_i, _o) => { throw new Error("Incompatible types!") }
+
+Error: Incompatible types!
+node rt.js  0.08s user 0.01s system 106% cpu 0.087 total
+time tsc bench-ts.ts
+bench-ts.ts:5008:19 - error TS2345: Argument of type 'SFn' is not assignable to parameter of type 'NFn'.
+tsc bench-ts.ts  5.63s user 0.05s system 131% cpu 4.322 total
+```
