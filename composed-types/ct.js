@@ -41,6 +41,17 @@ const range = fn(Num, Num, (n) => [...Array(n).keys()])
 const add_two_to_list = compmap(add_two, range)
 console.log(invoke(add_two_to_list)(3)) // produces [2, 3, 4]
 
+// This sample would run a second function across the result set (but cause set iteration twice)
+const add_two_to_then_stringify = compmap(stringer, add_two_to_list)
+console.log(invoke(add_two_to_then_stringify)(3))
+// [ 'Your number is: 2', 'Your number is: 3', 'Your number is: 4' ]
+
+// This sample would iterate the original data set only once
+const add_two_stringify = comp(stringer, add_two)
+const alt_add_two_to_then_stringify = compmap(add_two_stringify, range)
+console.log(invoke(alt_add_two_to_then_stringify)(3))
+// [ 'Your number is: 2', 'Your number is: 3', 'Your number is: 4' ]
+
 // This will throw and be an incompatible combo
 const get_months = fn(Str, Str, _ => ["Jan", "Feb", "Mar"])
 // const add_two_to_names = compmap(add_two, get_months)
