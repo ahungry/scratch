@@ -10,26 +10,37 @@
 #include <assert.h>
 
 double invoke (double (*f)(double i), double y) { return f (y); }
-int* fp;
-void* make_counter (void *ptr)
+int i = 0;
+int* fp[2];
+
+void* _make_counter (void *ptr)
 {
   double counter = (double)(int) ptr;
   int lexical_fn (double y) { return counter += y; }
-  fp = lexical_fn;
+  fp[i++] = lexical_fn;
 
   // The scope never leaves if we keep it in a thread forever or until done.
   for (;;) { sleep (1); }
 }
 
-int main ()
+int make_counter (int n)
 {
+  int nth = i;
   pthread_t pth;
-  pthread_create (&pth, NULL, make_counter, (void*)(int) 1);
+  pthread_create (&pth, NULL, _make_counter, (void*)(int) n);
   usleep (1);
 
-  // Now we have a HOF in fn_ptr that will return 100 + arg
-  printf ("Counter is: %f\n", invoke (fp, 5));
-  printf ("Counter is: %f\n", invoke (fp, 2.3));
+  return nth;
+}
+
+int main ()
+{
+  int x = make_counter (1);
+  printf ("Counter X is: %f\n", invoke (fp[x], 5));
+  int y = make_counter (3);
+  printf ("Counter X is: %f\n", invoke (fp[x], 2.3));
+  // Well, it looks like it works, as long as you never call this.
+  // printf ("Counter Y is: %f\n", invoke (fp[y], 10));
 
   printf ("fin.\n");
 
