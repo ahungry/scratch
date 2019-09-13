@@ -11,7 +11,7 @@
 int main ( int argc, char **argv ) {
 
   // create own program
-  char* src = "#include<stdlib.h>\n#include \"structs.h\"\n extern \"C\" void F(struct S s) { s.a += s.a; s.b *= s.b; }\n";
+  char* src = "#include<stdlib.h>\n#include \"structs.h\"\n extern \"C\" void F(struct S *s) { s->a += s->a; s->b *= s->b; }\n";
   int len = strlen (src);
   FILE* fh = fopen ("tmp.cpp", "w+");
   fwrite (src, len, 1, fh);
@@ -29,7 +29,7 @@ int main ( int argc, char **argv ) {
 
   if ( fLib ) {
     void* ptr = dlsym ( fLib, "F" );
-    int ( *fn ) ( struct S s ) = (int*) ptr;
+    int ( *fn ) ( struct S *s ) = (int*) ptr;
 
     if ( fn ) {
       for(int i=0;i<11;i++) {
@@ -38,7 +38,7 @@ int main ( int argc, char **argv ) {
         s.b = i;
 
         // use function
-        fn(s);
+        fn(&s);
         printf ("%d %d \n", s.a, s.b);
       }
     }
