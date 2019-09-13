@@ -14,6 +14,8 @@ void* adder (void *ptr)
 {
   int lexical_fn (int y) { return (int) ptr + y; }
   fn_ptr = lexical_fn;
+
+  // The scope never leaves if we keep it in a thread forever or until done.
   for (;;) { sleep (1); }
 }
 
@@ -21,7 +23,10 @@ int main ()
 {
   pthread_t pth;
   pthread_create (&pth, NULL, adder, (void*)(int) 100);
+
+  // A tiny pause is required.
   usleep (1);
+
   // Now we have a HOF in fn_ptr that will return 100 + arg
   assert (130 == caller (fn_ptr, 30));
   assert (150 == caller (fn_ptr, 50));
