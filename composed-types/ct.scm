@@ -12,6 +12,12 @@
     (o . ,o)
     (f . ,f)))
 
+;; Ideally we would use a syntax macro to make a form similar to this
+;; (defn add-one
+;;   "This is the doc for the add-one call."
+;;   [number n -> number]
+;;   (+ 1 n))
+
 (define add-one (fn 'number 'number (lambda (n) (+ 1 n))))
 (define stringer (fn 'number 'string (lambda (n) (number->string n))))
 
