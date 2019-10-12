@@ -1,0 +1,20 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blub
+spec:
+  selector:
+    matchLabels:
+      name: foo
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: blub-app
+        name: foo
+    spec:
+      containers:
+        - name: mi
+          image: my-image
+          imagePullPolicy: Never
