@@ -1,3 +1,11 @@
+# Cheatsheet
+
+https://kubernetes.io/docs/reference/kubectl/cheatsheet/
+
+# Usage
+
+See the Makefile for some shortcuts / things.
+
 # Setup
 
 Follow this guide:
