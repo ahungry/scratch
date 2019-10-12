@@ -50,3 +50,5 @@ https://kubernetes.io/docs/tutorials/hello-minikube/
 
 To start building a sample app or something (as root, `virsh list` should show minikube running).
 Also, kubectl should have mentioned it is pointed to minikube in kvm2.
+
+To see how the kvm is doing, check status with `virt-host-validate`
