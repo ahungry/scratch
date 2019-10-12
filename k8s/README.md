@@ -52,3 +52,14 @@ To start building a sample app or something (as root, `virsh list` should show m
 Also, kubectl should have mentioned it is pointed to minikube in kvm2.
 
 To see how the kvm is doing, check status with `virt-host-validate`
+
+#  Loading up local file
+
+https://stackoverflow.com/questions/42564058/how-to-use-local-docker-images-with-minikube#42564211
+
+Add to the minikube docker via:
+
+```sh
+eval $(minikube docker-env)
+docker build -t my-image .
+```
