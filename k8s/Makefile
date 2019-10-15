@@ -10,8 +10,8 @@ start: kube-start
 kube-start:
 	minikube start --vm-driver=kvm2 \
 	--insecure-registry localhost:5000 \
-	--memory 1024M \
-	--disk-size 1G
+	--memory 2048M \
+	--disk-size 2G
 	minikube dashboard
 
 kube-stop:
