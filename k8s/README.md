@@ -15,7 +15,6 @@ http://blog.programmableproduction.com/2018/03/08/Archlinux-Setup-Minikube-using
 Mostly as root, do the following:
 
 ```sh
-pacman -Ss kubeamd
 pikaur -Ss kubeadm
 pacman -Ss kubernetes
 pacman -Sy libvirt qemu-headless ebtables dnsmasq
@@ -27,6 +26,10 @@ pacman -Sy docker-machine
 pikaur -Sy minikube-bin kubectl-bin
 pikaur -Sy docker-machine-driver-kvm2
 ```
+
+If on Ubuntu, do this:
+
+https://gist.github.com/ahungry/47f5e22c8c39a6a99d43b37fa9aa5af1
 
 Then as user:
 
