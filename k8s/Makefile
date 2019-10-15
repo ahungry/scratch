@@ -1,6 +1,5 @@
 build:
-	eval $(minikube docker-env)
-	docker build -t my-image .
+	eval $(minikube docker-env); docker build -t my-image .
 
 up: kube-deployment
 down: kube-down
@@ -24,9 +23,9 @@ kube-up: build
 	kubectl get pods
 
 kube-down:
-	kubectl delete deployments --all
-	kubectl delete pods --all
 	kubectl delete service blub
+	kubectl delete pods --all
+	kubectl delete deployments --all
 
 kube-deployment:
 	kubectl create -f deployment.yaml
