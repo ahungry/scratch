@@ -1,0 +1,47 @@
+* Hello
+The hello class can handle printing a greeting to the user.
+
+#+BEGIN_SRC php :tangle yes
+<?php
+
+class Hello {
+  protected $firstName;
+  protected $lastName;
+  protected $age;
+
+#+END_SRC
+
+** Setup / initialization
+The class can accept a few different arguments:
+
+- firstName: The first name of the user (default: Matthew)
+- lastName: The last name of the user (default: Carter)
+- age: The age of the user (default: 99)
+
+#+BEGIN_SRC php :tangle yes
+
+public function __construct (
+  $firstName = 'Matthew',
+  $lastName = 'Carter',
+  $age = 99
+) {
+  $this->firstName = $firstName;
+  $this->lastName = $lastName;
+  $this->age = $age;
+}
+#+END_SRC
+
+** Printing a greeting
+This is used to print out the greeting based on what was passed in
+previously.
+
+#+BEGIN_SRC php :tangle yes
+public function doGreeting () {
+  echo "Hello {$this->firstName} {$this->lastName}, you are {$this->age} years old!";
+}
+#+END_SRC
+
+** Wrapping up
+#+BEGIN_SRC php :tangle yes
+}
+#+END_SRC
