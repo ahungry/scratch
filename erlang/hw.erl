@@ -6,6 +6,8 @@
 %% Compile directly with "c(hw)."
 
 -module(hw).
+-author("Me").
+
 -export([
 start/0,
 do_points/0,
@@ -14,7 +16,18 @@ make_tagged_tuple/0,
 list_comprehensions/0
 ]).
 
+%% Import some file stuff, common list: module things.
+-import(io, [format/1]).
+
+%% Sample of a macro (text substitution)
+-define(sub(X,Y), X-Y).
+
+%% Same as using flags -export_all and -debug_info
+%% TODO: Do not keep export_all on prod stuff.
+-compile([debug_info, export_all]).
+
 start() ->
+  format("Greetings again~n"),
   io:format("Hello World~n").
 
 %% https://learnyousomeerlang.com/starting-out-for-real
@@ -48,3 +61,46 @@ list_comprehensions () ->
   Doubled = [2 * N || N <- [1,2,3,4]],
   Evens = [X || X <- [1,2,3,4,5,6,7,8,9,10], X rem 2 =:= 0],
   [{doubled, Doubled}, {evens, Evens}].
+
+%% reimplement a BIF using pattern matching
+head([H|_]) -> H.
+second([_, X|_]) -> X.
+
+%% Another pattern matching solution with guards (after the arrow is the body)
+is_adult (X) when X >= 18 -> true;
+is_adult (_) -> false.
+
+is_teen(N) when N >= 13, N =< 19 -> true;
+is_teen(_) -> false.
+
+%% guards can use and and or, but cannot use user defined functions.
+is_teen_alt(N) when N < 13; N > 19 -> false;
+is_teen_alt(_) -> true.
+
+%% Erlang ifs are Guard Clauses and unique to Erlang
+oh_god(N) ->
+  if N =:= 2 -> might_succeed;
+     true -> always_does
+  end.
+
+help_me(Animal) ->
+  Talk = if Animal == cat -> "meow"
+            ; Animal == beef -> "mooo"
+            ; Animal == dog -> "bark"
+            ; Animal == tree -> "bark"
+            ; true -> "fgdadfgna"
+         end,
+  {Animal, "says " ++ Talk ++ "!"}.
+
+insert(X,[]) ->
+  [X];
+insert(X,Set) ->
+  case lists:member(X,Set) of
+    true -> Set;
+    false -> [X|Set]
+  end.
+
+fac(N) when N == 0 -> 1;
+fac(N) when N > 0 -> N * fac(N-1).
+
+%% https://learnyousomeerlang.com/recursion
