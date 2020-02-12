@@ -18,15 +18,18 @@ is_any({any, _}) -> true;
 is_any(_) -> false.
 
 %% Iterate on a single thing until none are left I guess.
-one_or_more(_, []) -> [];
-one_or_more(F, [H|T]) ->
+one_or_more(_, [], Acc) -> {Acc, []};
+one_or_more(F, [H|T], Acc) ->
     case F(H) of
-        true -> one_or_more(F, T);
-        false -> [H|T]
+        true -> one_or_more(F, T, [H|Acc]);
+        false -> {Acc, [H|T]}
     end.
 
 is_valid_object([open_brace|Rest]) ->
-    [close_brace] = one_or_more(fun json:is_any/1, Rest),
+    {Acc, [close_brace]} = one_or_more(fun json:is_any/1, Rest, []),
+    %% We can ensure some surrounding condition and scoop up the inner
+    %% content to be blob of yet unparsed things.
+    io:format("The accumulation is: ~w~n", [Acc]),
     true;
 is_valid_object(_) -> false.
 
