@@ -118,3 +118,29 @@ tail_len(L) -> tail_len(L, 0).
 
 tail_len([], Acc) -> Acc;
 tail_len([_|T], Acc) -> tail_len(T, 1 + Acc).
+
+one() -> io:format("Got a one~n"), 1.
+two() -> io:format("got a two~n"), 2.
+
+add(X, Y) -> X() + Y().
+
+%% invoke it
+test_hof() ->
+  hw:add(fun one/0, fun two/0),
+  hw:add(fun() -> hw:one() end, fun hw:two/0).
+
+map(_, []) -> [];
+map(F, [H|T]) ->
+  [F(H)|map(F, T)].
+
+fold(_, Start, []) -> Start;
+fold(F, Start, [H|T]) -> fold(F, F(H, Start), T).
+
+test_fold() ->
+  hw:fold(fun(X, Acc) -> X + Acc end, 0, lists:seq(1, 3)).
+
+reverse(L) ->
+  fold(fun(X, Acc) -> [X|Acc] end, [], L).
+
+map_fold(F, L) ->
+  reverse(hw:fold(fun(X, Acc) -> [F(X)|Acc] end, [], L)).
