@@ -1,0 +1,32 @@
+* Brainstorming Erlang things
+** Parsing strategy for JSON
+First, we will convert strings into atoms for our code convenience.
+
+Next, we will need to convert the list of atoms into some type of tree
+(AST).
+
+What shortcuts can we add for each?
+
+What would non-simplest form look like?
+
+#+BEGIN_SRC json
+{
+  "key": {
+    "x": 1
+  }
+}
+#+END_SRC
+
+So, in this, the first reduction can be factored into something like
+this - an outer wrapper identifying it as JSON object, with the inner
+as what would be a valid inner json object (key/value pairs):
+
+#+BEGIN_SRC json
+{JSON_OBJECT: "key": { "x": 1 }}
+#+END_SRC
+
+Then we could keep an array of children, with a key and a raw property.
+
+#+BEGIN_SRC json
+{JSON_OBJECT: "key": { "x": 1 }}
+#+END_SRC

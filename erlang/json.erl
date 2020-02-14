@@ -58,3 +58,63 @@ test_is_not_valid_object () ->
     catch
         error:Error -> {error, caught, Error}
     end.
+
+%% partition-by - like explode on a string, but works on lists.
+%% Essentially turns a list into a list of lists (opposite of flatten?)
+partition_by(_, [], Acc, Tmp) -> [Tmp|Acc];
+partition_by(X, [H|T], Acc, Tmp) when X == H ->
+    partition_by(X, T, [lists:reverse(Tmp)|Acc], []);
+partition_by(X, [H|T], Acc, Tmp) when X /= H ->
+    partition_by(X, T, Acc, [H|Tmp]).
+
+partition_by(X, L) -> partition_by(X, L, [], []).
+
+make_key(quote, quote, Inner) -> {inner, Inner}.
+make_val(Inner) -> {inner, Inner}.
+
+parse_val(L) ->
+    make_val(parse_thing(L)).
+
+%% Should be some quoted string
+parse_key(L) ->
+    [First|Rest] = L,
+    Last = lists:last(Rest),
+    Inner = lists:droplast(Rest),
+    make_key(First, Last, Inner).
+
+%% Here, we should split by colon and for each thing follow up by
+%% making it into some valid key/value.
+parse_keyval(L) ->
+    [Key, Val] = partition_by(colon, L),
+    {key, parse_key(Key), val, parse_val(Val)}.
+
+parse_keyvals(L) ->
+    KeyVals = partition_by(comma, L),
+    io:format("The keyvals are: ~w~n", [KeyVals]),
+    lists:map(fun parse_keyval/1, KeyVals).
+
+%% If we know we have an object, it can create keyvals
+make_object(open_brace, close_brace, Inner) ->
+    {object, {keyvals, parse_keyvals(Inner)}}.
+
+%% Lets try a list where we just work off first and last parts.
+parse_object(L) ->
+    %% [First|Rest] = L,
+    [First|Rest] = [X || X <- L, X /= ws],
+    Last = lists:last(Rest),
+    Inner = lists:droplast(Rest),
+    make_object(First, Last, Inner).
+
+parse_string(L) -> {string, L}.
+
+%% This is likely a list of any (chars)
+parse_any(L) ->
+    %% list comprehension, yay
+    lists:reverse([X || {any, X} <- L]).
+
+parse_thing([open_brace|T]) -> parse_object([open_brace|T]);
+parse_thing([quote|T]) -> parse_string([quote|T]);
+parse_thing([{any,X}|T]) -> parse_any([{any,X}|T]).
+
+test_make_object() ->
+    parse_object(parser("{ 'one' : 123 }")).
