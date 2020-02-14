@@ -5,8 +5,11 @@
 %% Read the strings, make something to represent them.
 parse("{" ++ Rest) -> {open_brace, Rest};
 parse("}" ++ Rest) -> {close_brace, Rest};
-parse("")       -> eot;
-parse([H|T])    -> {{any, H}, T}.
+parse(" " ++ Rest) -> {ws, Rest};
+parse("'" ++ Rest) -> {quote, Rest};
+parse(":" ++ Rest) -> {colon, Rest};
+parse("")          -> eot;
+parse([H|T])       -> {{any, H}, T}.
 
 parser(S) -> parser(parse(S), []).
 
@@ -32,6 +35,15 @@ is_valid_object([open_brace|Rest]) ->
     io:format("The accumulation is: ~w~n", [Acc]),
     true;
 is_valid_object(_) -> false.
+
+is_balanced_braces (L) ->
+    Open = [X || X = open_brace <- L],
+    Closed = [X || X = close_brace <- L],
+    length(Open) == length(Closed).
+
+is_balanced_quotes (L) ->
+    Quotes = [X || X = quote <- L],
+    0 =:= length(Quotes) rem 2.
 
 test_is_valid_object () ->
     Ast = parser("{dog}"),
