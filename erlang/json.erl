@@ -8,12 +8,16 @@ parse("}" ++ Rest) -> {close_brace, Rest};
 parse(" " ++ Rest) -> {ws, Rest};
 parse("'" ++ Rest) -> {quote, Rest};
 parse(":" ++ Rest) -> {colon, Rest};
+parse("," ++ Rest) -> {comma, Rest};
 parse("")          -> eot;
 parse([H|T])       -> {{any, H}, T}.
 
 parser(S) -> parser(parse(S), []).
 
 parser(eot, Acc) -> lists:reverse(Acc);
+%% TODO: Need to keep track of when we're inside strings
+%% As we parse, so until we close string, each thing encountered inside
+%% is flagged as a string_colon or string_quote etc.
 parser({Sym, Rest}, Acc) ->
     parser(parse(Rest), [Sym|Acc]).
 
@@ -61,7 +65,8 @@ test_is_not_valid_object () ->
 
 %% partition-by - like explode on a string, but works on lists.
 %% Essentially turns a list into a list of lists (opposite of flatten?)
-partition_by(_, [], Acc, Tmp) -> [Tmp|Acc];
+partition_by(_, [], Acc, Tmp) -> lists:reverse([Tmp|Acc]);
+%% FIXME: Fix this parser up
 partition_by(X, [H|T], Acc, Tmp) when X == H ->
     partition_by(X, T, [lists:reverse(Tmp)|Acc], []);
 partition_by(X, [H|T], Acc, Tmp) when X /= H ->
@@ -69,7 +74,7 @@ partition_by(X, [H|T], Acc, Tmp) when X /= H ->
 
 partition_by(X, L) -> partition_by(X, L, [], []).
 
-make_key(quote, quote, Inner) -> {inner, Inner}.
+make_key(quote, quote, Inner) -> {inner, lists:reverse(parse_any(Inner))}.
 make_val(Inner) -> {inner, Inner}.
 
 parse_val(L) ->
@@ -85,12 +90,14 @@ parse_key(L) ->
 %% Here, we should split by colon and for each thing follow up by
 %% making it into some valid key/value.
 parse_keyval(L) ->
+    %% FIXME: This assumes a 2 element array or odd things.
     [Key, Val] = partition_by(colon, L),
     {key, parse_key(Key), val, parse_val(Val)}.
 
 parse_keyvals(L) ->
+    io:format("~n~nThe input list itself is: ~w~n~n", [L]),
     KeyVals = partition_by(comma, L),
-    io:format("The keyvals are: ~w~n", [KeyVals]),
+    io:format("~n~nThe keyvals are: ~w~n~n", [KeyVals]),
     lists:map(fun parse_keyval/1, KeyVals).
 
 %% If we know we have an object, it can create keyvals
@@ -103,6 +110,7 @@ parse_object(L) ->
     [First|Rest] = [X || X <- L, X /= ws],
     Last = lists:last(Rest),
     Inner = lists:droplast(Rest),
+    %% TODO: Why is this getting reversed like that?
     make_object(First, Last, Inner).
 
 parse_string(L) -> {string, L}.
@@ -117,4 +125,4 @@ parse_thing([quote|T]) -> parse_string([quote|T]);
 parse_thing([{any,X}|T]) -> parse_any([{any,X}|T]).
 
 test_make_object() ->
-    parse_object(parser("{ 'one' : 123 }")).
+    parse_object(parser("{ 'one' : 123, 'two': 2 }")).
