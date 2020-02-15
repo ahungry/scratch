@@ -118,8 +118,8 @@ test_mask_between2() ->
                         close_brace, close_brace], []),
     io:format("We came up with: ~w~n~n", [Res]).
 
-make_key(quote, quote, Inner) -> {inner, parse_any(Inner)}.
-make_val(Inner) -> {inner, Inner}.
+make_key(quote, quote, Inner) -> parse_any(Inner).
+make_val(Inner) -> Inner.
 
 parse_val(L) ->
     %%io:format("A call to parse a val: ~w~n", [L]),
@@ -168,7 +168,7 @@ parse_keyvals(L) ->
 
 %% If we know we have an object, it can create keyvals
 make_object(open_brace, close_brace, Inner) ->
-    {object, {keyvals, parse_keyvals(Inner)}}.
+    {object, parse_keyvals(Inner)}.
 
 %% Lets try a list where we just work off first and last parts.
 parse_object(L) ->
@@ -181,12 +181,12 @@ parse_object(L) ->
 make_array(open_rect, close_rect, Inner) ->
     %% Just turn the values into numeric keyed list.
     Vals = partition_by(comma, mask_commas(Inner)),
-    io:format("The vals are now: ~p~n", [Vals]),
-    {array, {vals, lists:map(fun parse_val/1, Vals)}}.
+    %%io:format("The vals are now: ~p~n", [Vals]),
+    {array, lists:map(fun parse_val/1, Vals)}.
     %%{array, {vals, lists:map(fun parse_val/1, Inner)}}.
 
 parse_array(L) ->
-    io:format("parse_array found: ~p~n", [L]),
+    %%io:format("parse_array found: ~p~n", [L]),
     [First|Rest] = [X || X <- L, X /= ws],
     Last = lists:last(Rest),
     Inner = lists:droplast(Rest),
