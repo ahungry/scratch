@@ -65,16 +65,56 @@ test_is_not_valid_object () ->
 
 %% partition-by - like explode on a string, but works on lists.
 %% Essentially turns a list into a list of lists (opposite of flatten?)
-partition_by(_, [], Acc, Tmp) -> lists:reverse([Tmp|Acc]);
-%% FIXME: Fix this parser up
+%% We should allow tracking if we 'hit' inside something that disables the
+%% partitioning - if we "enter" braces or quotes.
+partition_by(_, [], Acc, Tmp) -> [Tmp|Acc];
 partition_by(X, [H|T], Acc, Tmp) when X == H ->
-    partition_by(X, T, [lists:reverse(Tmp)|Acc], []);
+    partition_by(X, T, [Tmp|Acc], []);
 partition_by(X, [H|T], Acc, Tmp) when X /= H ->
     partition_by(X, T, Acc, [H|Tmp]).
 
 partition_by(X, L) -> partition_by(X, L, [], []).
 
-make_key(quote, quote, Inner) -> {inner, lists:reverse(parse_any(Inner))}.
+test_partition_by() ->
+    [[4, 3], [2, 1]] = partition_by(bbb, [1, 2, bbb, 3, 4]).
+
+%% Find each char between two things and "mask" it.
+mask_between(Orig, Mask, Start, End, Masking, [], Acc) -> lists:reverse(Acc);
+mask_between(Orig, Mask, Start, End, Masking, [H|T], Acc)
+  when Start == H ->
+    mask_between(Orig, Mask, Start, End, true, T, [H|Acc]);
+mask_between(Orig, Mask, Start, End, Masking, [H|T], Acc)
+  when End == H ->
+    mask_between(Orig, Mask, Start, End, false, T, [H|Acc]);
+mask_between(Orig, Mask, Start, End, Masking, [H|T], Acc)
+  when true == Masking, H == Orig ->
+    mask_between(Orig, Mask, Start, End, Masking, T, [Mask|Acc]);
+mask_between(Orig, Mask, Start, End, Masking, [H|T], Acc) ->
+    mask_between(Orig, Mask, Start, End, Masking, T, [H|Acc]).
+
+test_mask_between() ->
+    Res = mask_between(
+          dog,
+          mdog,
+          a,
+          z,
+          false,
+          [1, 2, a, dog, dog, z, dog],
+          []
+         ),
+    io:format("We came up with: ~w~n~n", [Res]),
+    [1, 2, a, mdog, mdog, z, dog] = Res.
+
+%% Simulate closer to our real use cases
+%% Split by comma, then by colon.
+test_mask_between2() ->
+    Res = mask_between(comma, mcomma, open_brace, close_brace, false,
+                       [open_brace, key, colon, open_brace,
+                        key, colon, val, comma, key, colon, val,
+                        close_brace, close_brace], []),
+    io:format("We came up with: ~w~n~n", [Res]).
+
+make_key(quote, quote, Inner) -> {inner, parse_any(Inner)}.
 make_val(Inner) -> {inner, Inner}.
 
 parse_val(L) ->
@@ -87,16 +127,29 @@ parse_key(L) ->
     Inner = lists:droplast(Rest),
     make_key(First, Last, Inner).
 
+mask_colons(L) ->
+    mask_between(colon, mcolon, open_brace, close_brace, false, L, []).
+
+unmask_colons(L) ->
+    mask_between(mcolon, colon, open_brace, close_brace, false, L, []).
+
 %% Here, we should split by colon and for each thing follow up by
 %% making it into some valid key/value.
 parse_keyval(L) ->
     %% FIXME: This assumes a 2 element array or odd things.
-    [Key, Val] = partition_by(colon, L),
+    [Key, Val] = unmask_colons(partition_by(colon, mask_colons(L))),
     {key, parse_key(Key), val, parse_val(Val)}.
 
+mask_commas(L) ->
+    mask_between(comma, mcomma, open_brace, close_brace, false, L, []).
+
+unmask_commas(L) ->
+    mask_between(mcomma, comma, open_brace, close_brace, false, L, []).
+
+%% Before we split/partition by things, we need to escape some.
 parse_keyvals(L) ->
     io:format("~n~nThe input list itself is: ~w~n~n", [L]),
-    KeyVals = partition_by(comma, L),
+    KeyVals = unmask_commas(partition_by(comma, mask_commas(L))),
     io:format("~n~nThe keyvals are: ~w~n~n", [KeyVals]),
     lists:map(fun parse_keyval/1, KeyVals).
 
@@ -110,7 +163,6 @@ parse_object(L) ->
     [First|Rest] = [X || X <- L, X /= ws],
     Last = lists:last(Rest),
     Inner = lists:droplast(Rest),
-    %% TODO: Why is this getting reversed like that?
     make_object(First, Last, Inner).
 
 parse_string(L) -> {string, L}.
@@ -118,11 +170,11 @@ parse_string(L) -> {string, L}.
 %% This is likely a list of any (chars)
 parse_any(L) ->
     %% list comprehension, yay
-    lists:reverse([X || {any, X} <- L]).
+    [X || {any, X} <- L].
 
 parse_thing([open_brace|T]) -> parse_object([open_brace|T]);
 parse_thing([quote|T]) -> parse_string([quote|T]);
 parse_thing([{any,X}|T]) -> parse_any([{any,X}|T]).
 
 test_make_object() ->
-    parse_object(parser("{ 'one' : 123, 'two': 2 }")).
+    parse_object(parser("{ 'one' : 123, 'two': 2, 'three': {'x': 1} }")).
