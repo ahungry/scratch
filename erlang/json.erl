@@ -209,7 +209,7 @@ test_make_object() ->
     parse_object(parser("
 {
   'someString': 'Hello',
-  'anArray': [1, 2, 3, {'b': 99, 'c': 100}],
+  'anArray': [1, 2, 3, {'b': 99, 'c': 100, 'innerArray': [8, 7]}],
   'one' : 123,
   'two': 2,
   'three': {
