@@ -208,6 +208,9 @@ parse_thing([{any,X}|T]) -> parse_any([{any,X}|T]).
 test_make_object() ->
     parse_object(parser("
 {
+  'trueVal': true,
+  'falseVal': false,
+  'nullVal': null,
   'someString': 'Hello',
   'anArray': [1, 2, 3, {'b': 99, 'c': 100, 'innerArray': [8, 7]}],
   'one' : 123,
