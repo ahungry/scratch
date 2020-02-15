@@ -5,6 +5,8 @@
 %% Read the strings, make something to represent them.
 parse("{" ++ Rest) -> {open_brace, Rest};
 parse("}" ++ Rest) -> {close_brace, Rest};
+parse("[" ++ Rest) -> {open_rect, Rest};
+parse("]" ++ Rest) -> {close_rect, Rest};
 parse(" " ++ Rest) -> {ws, Rest};
 parse("
 " ++ Rest) -> {ws, Rest};
@@ -121,7 +123,8 @@ make_val(Inner) -> {inner, Inner}.
 
 parse_val(L) ->
     %%io:format("A call to parse a val: ~w~n", [L]),
-    make_val(parse_thing(L)).
+    Unmasked = unmask_colons(unmask_commas(L)),
+    make_val(parse_thing(Unmasked)).
 
 %% Should be some quoted string
 parse_key(L) ->
@@ -143,13 +146,17 @@ parse_keyval(L) ->
     %%io:format("The masked colons list is: ~w~n", [Masked]),
     [Key, Val] = partition_by(colon, Masked),
     %%io:format("~nThe masked colons k, v is: ~w and ~w ~n", [Key, Val]),
-    {key, parse_key(Key), val, parse_val(unmask_commas(unmask_colons(Val)))}.
+    {key, parse_key(Key), val, parse_val(Val)}.
 
 mask_commas(L) ->
-    mask_between(comma, mcomma, open_brace, close_brace, false, L, []).
+    L1 = mask_between(comma, mcomma, open_brace, close_brace, false, L, []),
+    L2 = mask_between(comma, mcomma, open_rect, close_rect, false, L1, []),
+    L2.
 
 unmask_commas(L) ->
-    mask_between(mcomma, comma, open_brace, close_brace, false, L, []).
+    L1 = mask_between(mcomma, comma, open_brace, close_brace, false, L, []),
+    L2 = mask_between(mcomma, comma, open_rect, close_rect, false, L1, []),
+    L2.
 
 %% Before we split/partition by things, we need to escape some.
 parse_keyvals(L) ->
@@ -171,6 +178,20 @@ parse_object(L) ->
     Inner = lists:droplast(Rest),
     make_object(First, Last, Inner).
 
+make_array(open_rect, close_rect, Inner) ->
+    %% Just turn the values into numeric keyed list.
+    Vals = partition_by(comma, mask_commas(Inner)),
+    io:format("The vals are now: ~p~n", [Vals]),
+    {array, {vals, lists:map(fun parse_val/1, Vals)}}.
+    %%{array, {vals, lists:map(fun parse_val/1, Inner)}}.
+
+parse_array(L) ->
+    io:format("parse_array found: ~p~n", [L]),
+    [First|Rest] = [X || X <- L, X /= ws],
+    Last = lists:last(Rest),
+    Inner = lists:droplast(Rest),
+    make_array(First, Last, Inner).
+
 parse_string(L) ->
     {string, [X || {any,X} <- L]}.
 
@@ -179,6 +200,7 @@ parse_any(L) ->
     %% list comprehension, yay
     [X || {any, X} <- L].
 
+parse_thing([open_rect|T]) -> parse_array([open_rect|T]);
 parse_thing([open_brace|T]) -> parse_object([open_brace|T]);
 parse_thing([quote|T]) -> parse_string([quote|T]);
 parse_thing([{any,X}|T]) -> parse_any([{any,X}|T]).
@@ -187,6 +209,7 @@ test_make_object() ->
     parse_object(parser("
 {
   'someString': 'Hello',
+  'anArray': [1, 2, 3, {'b': 99, 'c': 100}],
   'one' : 123,
   'two': 2,
   'three': {
