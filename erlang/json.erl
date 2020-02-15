@@ -67,16 +67,16 @@ test_is_not_valid_object () ->
 %% Essentially turns a list into a list of lists (opposite of flatten?)
 %% We should allow tracking if we 'hit' inside something that disables the
 %% partitioning - if we "enter" braces or quotes.
-partition_by(_, [], Acc, Tmp) -> [Tmp|Acc];
+partition_by(_, [], Acc, Tmp) -> lists:reverse([lists:reverse(Tmp)|Acc]);
 partition_by(X, [H|T], Acc, Tmp) when X == H ->
-    partition_by(X, T, [Tmp|Acc], []);
+    partition_by(X, T, [lists:reverse(Tmp)|Acc], []);
 partition_by(X, [H|T], Acc, Tmp) when X /= H ->
     partition_by(X, T, Acc, [H|Tmp]).
 
 partition_by(X, L) -> partition_by(X, L, [], []).
 
 test_partition_by() ->
-    [[4, 3], [2, 1]] = partition_by(bbb, [1, 2, bbb, 3, 4]).
+    [[1, 2], [3, 4]] = partition_by(bbb, [1, 2, bbb, 3, 4]).
 
 %% Find each char between two things and "mask" it.
 mask_between(Orig, Mask, Start, End, Masking, [], Acc) -> lists:reverse(Acc);
@@ -118,6 +118,7 @@ make_key(quote, quote, Inner) -> {inner, parse_any(Inner)}.
 make_val(Inner) -> {inner, Inner}.
 
 parse_val(L) ->
+    io:format("A call to parse a val: ~w~n", [L]),
     make_val(parse_thing(L)).
 
 %% Should be some quoted string
@@ -136,9 +137,11 @@ unmask_colons(L) ->
 %% Here, we should split by colon and for each thing follow up by
 %% making it into some valid key/value.
 parse_keyval(L) ->
-    %% FIXME: This assumes a 2 element array or odd things.
-    [Key, Val] = unmask_colons(partition_by(colon, mask_colons(L))),
-    {key, parse_key(Key), val, parse_val(Val)}.
+    Masked = mask_colons(L),
+    io:format("The masked colons list is: ~w~n", [Masked]),
+    [Key, Val] = partition_by(colon, Masked),
+    io:format("~nThe masked colons k, v is: ~w and ~w ~n", [Key, Val]),
+    {key, parse_key(Key), val, parse_val(unmask_colons(Val))}.
 
 mask_commas(L) ->
     mask_between(comma, mcomma, open_brace, close_brace, false, L, []).
@@ -150,7 +153,6 @@ unmask_commas(L) ->
 parse_keyvals(L) ->
     io:format("~n~nThe input list itself is: ~w~n~n", [L]),
     KeyVals = unmask_commas(partition_by(comma, mask_commas(L))),
-    io:format("~n~nThe keyvals are: ~w~n~n", [KeyVals]),
     lists:map(fun parse_keyval/1, KeyVals).
 
 %% If we know we have an object, it can create keyvals
