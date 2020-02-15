@@ -6,6 +6,8 @@
 parse("{" ++ Rest) -> {open_brace, Rest};
 parse("}" ++ Rest) -> {close_brace, Rest};
 parse(" " ++ Rest) -> {ws, Rest};
+parse("
+" ++ Rest) -> {ws, Rest};
 parse("'" ++ Rest) -> {quote, Rest};
 parse(":" ++ Rest) -> {colon, Rest};
 parse("," ++ Rest) -> {comma, Rest};
@@ -118,7 +120,7 @@ make_key(quote, quote, Inner) -> {inner, parse_any(Inner)}.
 make_val(Inner) -> {inner, Inner}.
 
 parse_val(L) ->
-    io:format("A call to parse a val: ~w~n", [L]),
+    %%io:format("A call to parse a val: ~w~n", [L]),
     make_val(parse_thing(L)).
 
 %% Should be some quoted string
@@ -138,10 +140,10 @@ unmask_colons(L) ->
 %% making it into some valid key/value.
 parse_keyval(L) ->
     Masked = mask_colons(L),
-    io:format("The masked colons list is: ~w~n", [Masked]),
+    %%io:format("The masked colons list is: ~w~n", [Masked]),
     [Key, Val] = partition_by(colon, Masked),
-    io:format("~nThe masked colons k, v is: ~w and ~w ~n", [Key, Val]),
-    {key, parse_key(Key), val, parse_val(unmask_colons(Val))}.
+    %%io:format("~nThe masked colons k, v is: ~w and ~w ~n", [Key, Val]),
+    {key, parse_key(Key), val, parse_val(unmask_commas(unmask_colons(Val)))}.
 
 mask_commas(L) ->
     mask_between(comma, mcomma, open_brace, close_brace, false, L, []).
@@ -151,8 +153,10 @@ unmask_commas(L) ->
 
 %% Before we split/partition by things, we need to escape some.
 parse_keyvals(L) ->
-    io:format("~n~nThe input list itself is: ~w~n~n", [L]),
-    KeyVals = unmask_commas(partition_by(comma, mask_commas(L))),
+    Masked = mask_commas(L),
+    %%io:format("~n~nThe masked input list itself is: ~w~n~n", [Masked]),
+    %% KeyVals = unmask_commas(partition_by(comma, Masked)),
+    KeyVals = partition_by(comma, Masked),
     lists:map(fun parse_keyval/1, KeyVals).
 
 %% If we know we have an object, it can create keyvals
@@ -167,7 +171,8 @@ parse_object(L) ->
     Inner = lists:droplast(Rest),
     make_object(First, Last, Inner).
 
-parse_string(L) -> {string, L}.
+parse_string(L) ->
+    {string, [X || {any,X} <- L]}.
 
 %% This is likely a list of any (chars)
 parse_any(L) ->
@@ -179,4 +184,14 @@ parse_thing([quote|T]) -> parse_string([quote|T]);
 parse_thing([{any,X}|T]) -> parse_any([{any,X}|T]).
 
 test_make_object() ->
-    parse_object(parser("{ 'one' : 123, 'two': 2, 'three': {'x': 1} }")).
+    parse_object(parser("
+{
+  'someString': 'Hello',
+  'one' : 123,
+  'two': 2,
+  'three': {
+             'x': 1,
+             'y': 2
+           }
+}
+")).
