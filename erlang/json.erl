@@ -193,3 +193,8 @@ test_make_object() ->
 
 get({object, L}, K) -> [H|_] = [Val || {key, Key, val, Val} <- L, Key == K], H;
 get({array, L}, Nth) -> lists:nth(Nth + 1, L).
+
+get_path(L, Path) -> lists:foldl(fun (K, Acc) -> get(Acc, K) end, L, Path).
+
+%% json:get_path(json:test_make_object(), ["anArray", 3, "innerArray", 0]).
+%% "8"
