@@ -25,25 +25,6 @@ parser(eot, Acc) -> lists:reverse(Acc);
 parser({Sym, Rest}, Acc) ->
     parser(parse(Rest), [Sym|Acc]).
 
-is_any({any, _}) -> true;
-is_any(_) -> false.
-
-%% Iterate on a single thing until none are left I guess.
-one_or_more(_, [], Acc) -> {Acc, []};
-one_or_more(F, [H|T], Acc) ->
-    case F(H) of
-        true -> one_or_more(F, T, [H|Acc]);
-        false -> {Acc, [H|T]}
-    end.
-
-is_valid_object([open_brace|Rest]) ->
-    {Acc, [close_brace]} = one_or_more(fun json:is_any/1, Rest, []),
-    %% We can ensure some surrounding condition and scoop up the inner
-    %% content to be blob of yet unparsed things.
-    io:format("The accumulation is: ~w~n", [Acc]),
-    true;
-is_valid_object(_) -> false.
-
 is_balanced_braces (L) ->
     Open = [X || X = open_brace <- L],
     Closed = [X || X = close_brace <- L],
@@ -52,20 +33,6 @@ is_balanced_braces (L) ->
 is_balanced_quotes (L) ->
     Quotes = [X || X = quote <- L],
     0 =:= length(Quotes) rem 2.
-
-test_is_valid_object () ->
-    Ast = parser("{dog}"),
-    true = is_valid_object(Ast).
-
-test_is_not_valid_object () ->
-    try
-        Ast = parser("{dog"),
-        true = is_valid_object(Ast)
-    of
-        _ -> ok
-    catch
-        error:Error -> {error, caught, Error}
-    end.
 
 %% partition-by - like explode on a string, but works on lists.
 %% Essentially turns a list into a list of lists (opposite of flatten?)
@@ -172,7 +139,9 @@ make_object(open_brace, close_brace, Inner) ->
 
 %% Lets try a list where we just work off first and last parts.
 parse_object(L) ->
-    %% [First|Rest] = L,
+    %% TODO: Throw error here
+    true = is_balanced_braces(L),
+    true = is_balanced_quotes(L),
     [First|Rest] = [X || X <- L, X /= ws],
     Last = lists:last(Rest),
     Inner = lists:droplast(Rest),
