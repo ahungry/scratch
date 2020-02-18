@@ -221,3 +221,6 @@ test_make_object() ->
            }
 }
 ")).
+
+get({object, L}, K) -> [H|_] = [Val || {key, Key, val, Val} <- L, Key == K], H;
+get({array, L}, Nth) -> lists:nth(Nth + 1, L).
