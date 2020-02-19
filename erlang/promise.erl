@@ -21,18 +21,24 @@ evaluator(RecvPid) ->
 all(Fs) ->
     FinalPid = self(),
     RecvPid = spawn(promise, receiver, [[], length(Fs), FinalPid]),
-    EvalPid = spawn(promise, evaluator, [RecvPid]),
-    lists:map(fun (F) -> EvalPid ! {eval, F} end, Fs),
-    receive
-        {final, Xs} -> lists:reverse(Xs)
-    after 1000 ->
-            timeout
-    end.
+    lists:map(fun (F) ->
+                      EvalPid = spawn(promise, evaluator, [RecvPid]),
+                      EvalPid ! {eval, F} ,
+                      exit(EvalPid, normal)
+              end, Fs),
+    Res = receive
+        {final, Xs} -> Xs
+    after 5000 ->
+            io:format("Timeout..."), []
+    end,
+    exit(RecvPid, normal),
+    lists:reverse(Res).
 
 test() ->
     Xs = all([
-              fun () -> 1 end,
-              fun () -> 2 end,
-              fun () -> 3 end
+              fun () -> timer:sleep(1000), 1 end,
+              fun () -> timer:sleep(1000), 2 end,
+              fun () -> timer:sleep(1000), 3 end,
+              fun () -> timer:sleep(1000), 4 end
              ]),
     Xs.
