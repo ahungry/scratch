@@ -34,12 +34,14 @@ test_d3() ->
     RecvPid = spawn(con, receiver, [[], 2, FinalPid]),
     DolphinPid = spawn(con, dolphin3, [RecvPid]),
     DolphinPid ! {self(), do_a_flip},
-    DolphinPid ! {self(), fish},
     DolphinPid ! {self(), terminate},
+    DolphinPid ! {self(), fish},
     %% This will stall out and wait for the match - I guess it could fill up
     %% with message passes we don't actually care about since we aren't handling
     %% then in our receive block - I guess we would want to put this in its own spawn
     %% later.
     receive
         {final, Anything} -> io:format("At the end, FinalPid called! ~p~n", [Anything])
+    after 500 ->
+            io:format("Timed out, some process didn't handle as expected...~n")
     end.
