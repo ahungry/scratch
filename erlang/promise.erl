@@ -11,7 +11,7 @@ evaluator(RecvPid) ->
     receive
         {eval, F} ->
             X = F(),
-            io:format("Evaluation result of promise was: ~p~n", [X]),
+            %%io:format("Evaluation result of promise was: ~p~n", [X]),
             RecvPid ! {promise_result, X},
             evaluator(RecvPid);
 
@@ -28,17 +28,20 @@ all(Fs) ->
               end, Fs),
     Res = receive
         {final, Xs} -> Xs
-    after 5000 ->
+    after 15000 ->
             io:format("Timeout..."), []
     end,
     exit(RecvPid, normal),
     lists:reverse(Res).
 
+%% Returns a function that will return X after some time
+get_fn(X) -> fun () -> timer:sleep(1000), X end.
+
 test() ->
-    Xs = all([
-              fun () -> timer:sleep(1000), 1 end,
-              fun () -> timer:sleep(1000), 2 end,
-              fun () -> timer:sleep(1000), 3 end,
-              fun () -> timer:sleep(1000), 4 end
-             ]),
-    Xs.
+    Start = erlang:timestamp(),
+    Xs = all(lists:map(fun get_fn/1, lists:seq(1, 10000))),
+    io:format("Done with the evaluation result, found ~w items ~n", [length(Xs)]),
+    End = erlang:timestamp(),
+    Diff = timer:now_diff(End, Start) / 1000 / 1000,
+    io:format("It took some time: ~p~n", [Diff]),
+    done.

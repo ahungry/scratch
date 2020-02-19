@@ -5,3 +5,9 @@ run: hw.beam
 
 hw.beam:
 	erlc hw.erl
+
+test-promise: promise.beam
+	erl -s promise test -noshell ./promise.beam -s init stop
+
+promise.beam:
+	erlc promise.erl
