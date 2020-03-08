@@ -30,12 +30,13 @@ docker update --memory-swap=128m --memory=4m <container name>
 #+END_SRC
 
 (note: memory-swap is mem+swap, so for this trick, ensure swap is set
-to at least as much as memory originally was)
+to at least as much as memory originally was, default memory-swap is
+2x memory of the container)
 
 To resume the thing:
 
 #+BEGIN_SRC sh
-docker update --memory-swap=128m --memory=128m <container name>
+docker update --memory-swap=256m --memory=128m <container name>
 #+END_SRC
 
 ** Checking on it
@@ -45,3 +46,14 @@ You can see if it did go into swap via:
 #+BEGIN_SRC sh
 cat /sys/fs/cgroup/memory/docker/*/memory.stat | grep -E '(swap|rss)'
 #+END_SRC
+
+** Notes
+
+When allocating roughly a gig for this, freezing it in this manner
+takes about 35 seconds to power it off/stop it (to move the RAM
+to swap).
+
+When doing it with 100mb it takes around 5 seconds to freeze.
+
+In both scenarios, "unfreezing" is instantaneous, however it doesn't
+recover the RAM, but leaves it in swap.
