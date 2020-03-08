@@ -17,9 +17,12 @@ docker-run:
 	docker run --memory-swappiness=1 --name=memory-eater --rm -it -m4g memory-eater
 
 freeze:
+	sudo swapon -a
 	docker pause memory-eater
 	docker update --memory-swap=4g --memory=4m memory-eater
 
 unfreeze:
 	docker update --memory-swap=8g --memory=4g memory-eater
+	sudo swapoff -a
+	sudo swapon -a
 	docker unpause memory-eater
