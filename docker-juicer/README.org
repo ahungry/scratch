@@ -1,0 +1,39 @@
+* Docker Juicer
+
+A way to tune Docker for everything it's got.
+
+Primary use case:
+
+AWS Lambda like power up / power down on demand, but with fast startup
+times for slow start based images (Clojure).
+
+** Start up (run) with minimal resources
+You can boot up the container with limited memory, similar to:
+
+#+BEGIN_SRC sh
+docker run --rm -it -m 128m clojure:alpine
+#+END_SRC
+
+** Saving on CPU
+You can save CPU cycles if you don't mind pausing via:
+
+#+BEGIN_SRC sh
+docker pause <container name>
+#+END_SRC
+
+** Saving on RAM
+After you've paused it, you can force it into going into almost all
+swap (to let other active runs use the ram) via:
+
+#+BEGIN_SRC sh
+docker update --memory-swap=128m --memory=4m <container name>
+#+END_SRC
+
+(note: memory-swap is mem+swap, so for this trick, ensure swap is set
+to at least as much as memory originally was)
+
+To resume the thing:
+
+#+BEGIN_SRC sh
+docker update --memory-swap=128m --memory=128m <container name>
+#+END_SRC
