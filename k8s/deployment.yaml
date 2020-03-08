@@ -1,4 +1,7 @@
 # -*- mode: k8s -*-
+
+# https://kubernetes.io/docs/tutorials/stateless-application/expose-external-ip-address/
+
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -19,3 +22,5 @@ spec:
         - name: mi
           image: my-image
           imagePullPolicy: Never
+          ports:
+            - containerPort: 8080

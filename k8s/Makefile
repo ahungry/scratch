@@ -30,16 +30,20 @@ kube-down:
 kube-deployment:
 	kubectl create -f deployment.yaml
 	kubectl get deployments
-	kubectl expose deployment blub --type=LoadBalancer --port=8080
+	#kubectl expose deployment blub --type=LoadBalancer --port=8080
 	minikube service blub
 
 kube-apply:
-	kubectl apply -f deployment-pod.yaml
+	kubectl apply -f deployment.yaml
+
+forward:
+	kubectl port-forward deployment/blub 12345:8080
 
 info:
 	kubectl get pods
 	kubectl get deployments
 	kubectl get services
+	minikube ip
 
 #minikube start --insecure-registry localhost:5000 --memory 4096
 #docker build . -f docker.collection -t localhost:5000/collection:latest -t localhost:5000/collection:dev
