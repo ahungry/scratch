@@ -9,6 +9,53 @@
 #include <arpa/inet.h>  /* IP address conversion stuff */
 #include <netdb.h>      /* gethostbyname */
 
+#include <arpa/inet.h>  /* IP address conversion stuff */
+#include <ctype.h>
+#include <errno.h>
+#include <netdb.h>      /* gethostbyname */
+#include <netinet/in.h> /* INET constants and stuff */
+#include <string.h>
+#include <sys/socket.h> /* socket specific definitions */
+#include <sys/types.h>
+#include <unistd.h>
+
+void
+die (const char *s)
+{
+  perror (s);
+  exit (1);
+}
+
+int
+get_socket_fd (struct addrinfo** return_res, char *hostname, int port)
+{
+  char portname[10];
+  snprintf (portname, sizeof (portname), "%d", port);
+
+  // printf ("About to send to: %s:%s (%d)\n", hostname, portname, port);
+
+  struct addrinfo hints;
+  memset (&hints, 0, sizeof (hints));
+
+  hints.ai_family = AF_UNSPEC;
+  hints.ai_socktype = SOCK_DGRAM;
+  hints.ai_protocol = 0;
+  hints.ai_flags = AI_ADDRCONFIG;
+
+  struct addrinfo* res = 0;
+  int err = getaddrinfo (hostname, portname, &hints, &res);
+
+  if (err != 0) die("getaddrinfo");
+
+  int fd = socket (res->ai_family, res->ai_socktype, res->ai_protocol);
+
+  if (fd == -1) die("socket");
+
+  // Return the res by setting in place
+  *return_res = res;
+
+  return fd;
+}
 
 
 /* this routine echos any messages (UDP datagrams) received */
