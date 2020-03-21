@@ -16,7 +16,7 @@ http://localhost:6666/cgi-bin/index.sh -H'Content-Type: application/json'
 curl localhost:6666/cgi-bin/index.sh
 #+END_SRC
 
-The siege statistics and docker memory usage back up this up as a
+The siege statistics and docker memory usage back this up as a
 potentially good idea:
 
 #+BEGIN_SRC sh
