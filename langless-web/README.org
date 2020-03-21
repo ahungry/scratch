@@ -1,3 +1,7 @@
 * Langless Web
 
 Web API/app without any "programming languages" used.
+
+User registration/CRUD style app done in less than 50 LOC in:
+
+app/cgi-bin/index.sh

@@ -1,5 +1,12 @@
 #!/bin/sh
 
+# Call with:
+
+# curl -XPOST -d '{"user":"fake", "pass": "fake"}' http://localhost:6666/cgi-bin/index.sh -H'Content-Type: application/json'
+
+# Or with:
+# curl localhost:6666/cgi-bin/index.sh
+
 echo -ne "Content-Type: application/json\n\n"
 
 # env
