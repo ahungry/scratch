@@ -26,7 +26,7 @@ else
     result='true'
 fi
 
-# Persistence
+# Persistence (Sql Injection vector, duh - its just a trivial POC, do not use this)
 sqlite3 /tmp/users.db "INSERT INTO users (user, pass) VALUES ('$user', '$pass')" 2>&1
 
 cat <<EOF
