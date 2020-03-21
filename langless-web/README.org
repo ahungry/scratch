@@ -15,3 +15,28 @@ http://localhost:6666/cgi-bin/index.sh -H'Content-Type: application/json'
 # Or with:
 curl localhost:6666/cgi-bin/index.sh
 #+END_SRC
+
+The siege statistics and docker memory usage back up this up as a
+potentially good idea:
+
+#+BEGIN_SRC sh
+siege -r1000 -c10 http://localhost:6666/cgi-bin/index.sh
+#+END_SRC
+
+#+BEGIN_SRC json
+{       "transactions":                        10000,
+        "availability":                       100.00,
+        "elapsed_time":                        12.73,
+        "data_transferred":                     0.23,
+        "response_time":                        0.01,
+        "transaction_rate":                   785.55,
+        "throughput":                           0.02,
+        "concurrency":                          9.84,
+        "successful_transactions":             10000,
+        "failed_transactions":                     0,
+        "longest_transaction":                  0.04,
+        "shortest_transaction":                 0.00
+}
+#+END_SRC
+
+The memory usage during this, from "docker stats" never exceeded 10 MB.
