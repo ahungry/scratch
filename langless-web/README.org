@@ -40,3 +40,5 @@ siege -r1000 -c10 http://localhost:6666/cgi-bin/index.sh
 #+END_SRC
 
 The memory usage during this, from "docker stats" never exceeded 10 MB.
+
+This is running on a Lenovo Thinkpad W530
