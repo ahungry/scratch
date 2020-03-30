@@ -31,7 +31,7 @@ main ()
     }
 
   remote.sin_family = AF_INET;
-  remote.sin_port = htons (12345);
+  remote.sin_port = htons (8000);
   remote.sin_addr.s_addr = inet_addr ("127.0.0.1");
 
   if (connect (sock, (struct sockaddr *) &remote, sizeof (remote)))
@@ -40,6 +40,8 @@ main ()
 
       return 1;
     }
+
+  send (sock, "GET /version HTTP/1.1\n\n\n", 23, 0);
 
   while ((n = read (sock, buf, sizeof (buf) -1)) > 0)
     {
