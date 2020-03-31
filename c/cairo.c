@@ -24,7 +24,7 @@ main (int argc, char *argv[])
   cairo_set_line_width (ctx, 9);
   cairo_set_source_rgb (ctx, 0.69, 0.19, 0);
   cairo_translate (ctx, width / 2, height / 2);
-  cairo_arc (ctx, 0, 0, 50, 0, 2 * M_PI);
+  cairo_arc (ctx, 0, 0, 100, 0, 2 * M_PI);
   cairo_stroke_preserve (ctx);
   cairo_set_source_rgb (ctx, 0.3, 0.4, 0.6);
   cairo_fill (ctx);
@@ -34,9 +34,16 @@ main (int argc, char *argv[])
                           CAIRO_FONT_SLANT_NORMAL,
                           CAIRO_FONT_WEIGHT_BOLD);
   cairo_set_font_size (ctx, 32.0);
-  cairo_set_source_rgb (ctx, 0.0, 0.0, 1.0);
-  cairo_move_to (ctx, 0.0, height / 2);
-  cairo_show_text (ctx, "Hello, world!");
+  cairo_set_source_rgb (ctx, 1.0, 1.0, 1.0);
+  cairo_move_to (ctx, - width / 3, 0);
+  cairo_show_text (ctx, "..Cairo Time..");
+
+  // Draw some lines out from center of circle?
+  cairo_set_line_width (ctx, 2);
+  cairo_set_source_rgb (ctx, 0.0, 1.0, 0.0);
+  cairo_move_to (ctx, 0.0, 0.0);
+  cairo_line_to (ctx, width, height);
+  cairo_stroke (ctx);
 
   const char *filename = "/tmp/dummy.png";
 
