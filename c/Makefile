@@ -11,3 +11,6 @@ assertx.bin: assert.c
 
 assert.bin: assert.c
 	gcc -DNDEBUG -Wall $< -lm -ldl -o $@
+
+cairo.bin: cairo.c
+	gcc -Wall $(shell pkg-config --libs cairo) -I/usr/include/cairo -o $@ $<
