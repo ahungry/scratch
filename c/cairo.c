@@ -27,6 +27,21 @@ set_rand_rgb (cairo_t *ctx)
   cairo_set_source_rgb (ctx, get_rand_color(), get_rand_color(), get_rand_color());
 }
 
+// Float is causing imprecise charting, so use int and divide...
+// Therefore, ratio of 50 implies 50%
+int
+draw_slice (cairo_t *ctx, int ratio, float theta_start)
+{
+  float theta = theta_start + ((M_PI * 100 / 18000.0) * (36000.0 * ratio));
+
+  cairo_move_to (ctx, 0.0, 0.0);
+  set_rand_rgb (ctx);
+  cairo_arc (ctx, 0, 0, 100, theta_start / 10000, theta / 10000);
+  cairo_fill (ctx);
+
+  return theta;
+}
+
 int
 main (int argc, char *argv[])
 {
@@ -49,31 +64,26 @@ main (int argc, char *argv[])
   cairo_fill (ctx);
 
   // Draw some hello world text
-  cairo_select_font_face (ctx, "Sans",
+  cairo_select_font_face (ctx, "Mono",
                           CAIRO_FONT_SLANT_NORMAL,
                           CAIRO_FONT_WEIGHT_BOLD);
-  cairo_set_font_size (ctx, 32.0);
-  cairo_set_source_rgb (ctx, 1.0, 1.0, 1.0);
+  cairo_set_font_size (ctx, 16.0);
+  cairo_set_source_rgb (ctx, 0.0, 0.0, 0.0);
   cairo_move_to (ctx, - width / 3, 0);
   cairo_show_text (ctx, "..Cairo Time..");
 
-  // Draw some lines out from center of circle?
-  float ratio = 0.25;
-  float theta = (M_PI / 180) * (360 * ratio);
-  cairo_set_line_width (ctx, 2);
-  set_rand_rgb (ctx);
-  cairo_move_to (ctx, 0.0, 0.0);
-  cairo_arc (ctx, 0, 0, 100, 0, theta);
-  cairo_fill (ctx);
-  // cairo_line_to (ctx, width, height);
-  /// cairo_stroke (ctx);
+  float last_theta = 0;
 
-  float ratio2 = 0.15;
-  float theta2 = theta + (M_PI / 180) * (360 * ratio2);
-  cairo_set_line_width (ctx, 2);
-  set_rand_rgb (ctx);
-  cairo_move_to (ctx, 0.0, 0.0);
-  cairo_arc (ctx, 0, 0, 100, theta, theta2);
+  for (int i = 0; i < argc; i++)
+    {
+      int ratio = atoi (argv[i]);
+
+      last_theta = draw_slice (ctx, ratio, last_theta);
+    }
+
+  cairo_move_to (ctx, 100, 0);
+  cairo_set_source_rgb (ctx, 0.0, 0.0, 0.0);
+  cairo_show_text (ctx, "First item");
   cairo_fill (ctx);
 
   const char *filename = "/tmp/dummy.png";
