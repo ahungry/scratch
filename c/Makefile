@@ -14,3 +14,10 @@ assert.bin: assert.c
 
 cairo.bin: cairo.c
 	gcc -Wall $(shell pkg-config --libs cairo) -I/usr/include/cairo -o $@ $<
+
+docker-build-cairo:
+	docker build -t alpine:cairo . -f Dockerfile_cairo
+
+docker-run-cairo: docker-build-cairo
+	$(info Use: docker cp alpine_cairo:/tmp/dummy.png ./dummy.png)
+	docker run --name alpine_cairo --rm -it alpine:cairo

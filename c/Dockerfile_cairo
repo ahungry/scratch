@@ -1,0 +1,14 @@
+# -*- mode: dockerfile; -*-
+
+FROM alpine:latest
+
+RUN apk add build-base cairo-dev cairo cairo-tools
+
+WORKDIR /app
+
+COPY cairo.c .
+
+RUN gcc -c -Wall $(pkg-config --cflags cairo) cairo.c
+RUN gcc cairo.o $(pkg-config --libs cairo) -o cairo.bin
+
+RUN sh
