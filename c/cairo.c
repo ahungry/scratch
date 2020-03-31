@@ -9,11 +9,30 @@
 // #include "/usr/include/cairo/cairo.h"
 #include <cairo.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
+#include <time.h>
+
+float
+get_rand_color ()
+{
+  float my_rand = (rand () % 100) / 100.0;
+
+  return my_rand;
+}
+
+void
+set_rand_rgb (cairo_t *ctx)
+{
+  cairo_set_source_rgb (ctx, get_rand_color(), get_rand_color(), get_rand_color());
+}
 
 int
 main (int argc, char *argv[])
 {
+  time_t t;
+  srand ((unsigned) time (&t));
+
   int width = 300, height = 300;
   cairo_surface_t *surface =
     cairo_image_surface_create (CAIRO_FORMAT_ARGB32, width, height);
@@ -42,17 +61,17 @@ main (int argc, char *argv[])
   float ratio = 0.25;
   float theta = (M_PI / 180) * (360 * ratio);
   cairo_set_line_width (ctx, 2);
-  cairo_set_source_rgb (ctx, 0.0, 1.0, 0.0);
+  set_rand_rgb (ctx);
   cairo_move_to (ctx, 0.0, 0.0);
   cairo_arc (ctx, 0, 0, 100, 0, theta);
   cairo_fill (ctx);
   // cairo_line_to (ctx, width, height);
   /// cairo_stroke (ctx);
 
-  float ratio2 = 0.25;
-  float theta2 = theta + (M_PI / 180) * (360 * ratio);
+  float ratio2 = 0.15;
+  float theta2 = theta + (M_PI / 180) * (360 * ratio2);
   cairo_set_line_width (ctx, 2);
-  cairo_set_source_rgb (ctx, 0.8, 3.0, 0.0);
+  set_rand_rgb (ctx);
   cairo_move_to (ctx, 0.0, 0.0);
   cairo_arc (ctx, 0, 0, 100, theta, theta2);
   cairo_fill (ctx);
