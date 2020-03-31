@@ -39,11 +39,23 @@ main (int argc, char *argv[])
   cairo_show_text (ctx, "..Cairo Time..");
 
   // Draw some lines out from center of circle?
+  float ratio = 0.25;
+  float theta = (M_PI / 180) * (360 * ratio);
   cairo_set_line_width (ctx, 2);
   cairo_set_source_rgb (ctx, 0.0, 1.0, 0.0);
   cairo_move_to (ctx, 0.0, 0.0);
-  cairo_line_to (ctx, width, height);
-  cairo_stroke (ctx);
+  cairo_arc (ctx, 0, 0, 100, 0, theta);
+  cairo_fill (ctx);
+  // cairo_line_to (ctx, width, height);
+  /// cairo_stroke (ctx);
+
+  float ratio2 = 0.25;
+  float theta2 = theta + (M_PI / 180) * (360 * ratio);
+  cairo_set_line_width (ctx, 2);
+  cairo_set_source_rgb (ctx, 0.8, 3.0, 0.0);
+  cairo_move_to (ctx, 0.0, 0.0);
+  cairo_arc (ctx, 0, 0, 100, theta, theta2);
+  cairo_fill (ctx);
 
   const char *filename = "/tmp/dummy.png";
 
