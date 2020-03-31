@@ -9,18 +9,33 @@
 // #include "/usr/include/cairo/cairo.h"
 #include <cairo.h>
 #include <stdio.h>
+#include <math.h>
 
 int
 main (int argc, char *argv[])
 {
-  cairo_surface_t *surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, 300, 300);
+  int width = 300, height = 300;
+  cairo_surface_t *surface =
+    cairo_image_surface_create (CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *ctx = cairo_create (surface);
+
+  // http://zetcode.com/gfx/cairo/basicdrawing/
+  // Draw a circle
+  cairo_set_line_width (ctx, 9);
+  cairo_set_source_rgb (ctx, 0.69, 0.19, 0);
+  cairo_translate (ctx, width / 2, height / 2);
+  cairo_arc (ctx, 0, 0, 50, 0, 2 * M_PI);
+  cairo_stroke_preserve (ctx);
+  cairo_set_source_rgb (ctx, 0.3, 0.4, 0.6);
+  cairo_fill (ctx);
+
+  // Draw some hello world text
   cairo_select_font_face (ctx, "Sans",
                           CAIRO_FONT_SLANT_NORMAL,
                           CAIRO_FONT_WEIGHT_BOLD);
   cairo_set_font_size (ctx, 32.0);
   cairo_set_source_rgb (ctx, 0.0, 0.0, 1.0);
-  cairo_move_to (ctx, 10.0, 50.0);
+  cairo_move_to (ctx, 0.0, height / 2);
   cairo_show_text (ctx, "Hello, world!");
 
   const char *filename = "/tmp/dummy.png";
