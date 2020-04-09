@@ -2,12 +2,14 @@
 #include <stdio.h>
 #include <string.h>
 
+#define MAX_LINE_SIZE 10000
+
 void
 slurp (char *fn, char *find, char *replace)
 {
   FILE *fp;
   char *c;
-  char line[10000];
+  char line[MAX_LINE_SIZE];
   char *pos = NULL;
   char *pre = NULL;
   char *post = NULL;
@@ -16,7 +18,7 @@ slurp (char *fn, char *find, char *replace)
 
   fp = fopen (fn, "r");
 
-  while (NULL != (c = fgets (line, 10000, fp)))
+  while (NULL != (c = fgets (line, MAX_LINE_SIZE, fp)))
     {
       pos = (char *) &line;
       post = pos;
@@ -25,13 +27,15 @@ slurp (char *fn, char *find, char *replace)
         {
           int ipos = pos - post;
 
-          pre = malloc (255);
+          pre = malloc (MAX_LINE_SIZE);
           memcpy (pre, pos - ipos, ipos);
           printf ("%s%s", pre, replace);
 
           pos += findlen;
           post = pos;
         }
+
+      free (pre);
 
       printf ("%s", post);
     }
