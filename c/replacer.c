@@ -16,7 +16,7 @@ slurp (char *fn, char *find, char *replace)
 
   fp = fopen (fn, "r");
 
-  while (NULL != (c = fgets (line, 255, fp)))
+  while (NULL != (c = fgets (line, 10000, fp)))
     {
       pos = (char *) &line;
       post = pos;
