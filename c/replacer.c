@@ -35,11 +35,10 @@ slurp (char *fn, char *find, char *replace)
           post = pos;
         }
 
-      free (pre);
-
       printf ("%s", post);
     }
 
+  free (pre);
   fclose (fp);
 }
 
