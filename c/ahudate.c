@@ -26,6 +26,55 @@ ahudate_year_to_epoch (char * year)
   return (int64_t) (year_diff * YEAR_SECONDS) + (year_leap * DAY_SECONDS);
 }
 
+typedef struct ahudate_datetime {
+  int64_t y;
+  int64_t m;
+  int64_t d;
+} ahudate_datetime_t;
+
+int64_t
+ahudate_datetime_to_epoch (ahudate_datetime_t * m)
+{
+  // calculate the year epoch
+  // The leap year calculation seems to work, although basing it off epoch
+  // seems odd in hindsight, as 1970 wasn't itself a leap year...
+  int64_t year_diff = m->y - 1970;
+  int64_t year_leap = year_diff / 4;
+  int64_t epoch_year = (int64_t) (year_diff * YEAR_SECONDS) + (year_leap * DAY_SECONDS);
+
+  // calculate the month epoch
+  int64_t month_days = 0;
+
+  switch (m->m)
+    {
+    case 1: month_days = 0; break;
+    case 2: month_days = 31; break;
+    case 3: month_days = 59; break;
+    case 4: month_days = 90; break;
+    case 5: month_days = 120; break;
+    case 6: month_days = 151; break;
+    case 7: month_days = 181; break;
+    case 8: month_days = 212; break;
+    case 9: month_days = 242; break;
+    case 10: month_days = 273; break;
+    case 11: month_days = 303; break;
+    case 12: month_days = 334; break;
+    }
+
+  // Add the extra day if leap year
+  if (m->y % 4 == 0 && m->m > 2)
+    {
+      month_days++;
+    }
+
+  int64_t epoch_month = (int64_t) month_days * DAY_SECONDS;
+  int64_t epoch_days = (int64_t) (m->d - 1) * DAY_SECONDS;
+
+  // return (int64_t) ((y - 1970) * 365.25 * 24 * 60 * 60);
+  return epoch_year + epoch_month + epoch_days;
+}
+
+
 int
 ahudate_is_numeric (char c)
 {
@@ -191,6 +240,13 @@ main (int argc, char *argv[])
 
   t = mktime (&tm);
   fprintf (stderr, "The date in epoch is: %ld\n", (long) t);
+
+  ahudate_datetime_t * dt = malloc (sizeof (ahudate_datetime_t));
+  dt->y = 1972;
+  dt->m = 3;
+  dt->d = 11;
+  int64_t dt_epoch = ahudate_datetime_to_epoch (dt);
+  fprintf (stderr, "The datetime in epoch is: %ld\n", (long) dt_epoch);
 
   exit (EXIT_SUCCESS);
 }
