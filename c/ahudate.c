@@ -1,6 +1,5 @@
-// Breaks int64_t
-// #define _XOPEN_SOURCE
-// #include <time.h>
+#define _XOPEN_SOURCE 700
+#include <time.h>
 
 #include "string.h"
 #include <stdio.h>
@@ -66,17 +65,21 @@ ahudate_is_mask_valid (char *s, int masks[], int mask_size)
 
 typedef struct ahudate_mask {
   int size;
-  int mask[];
+  // int mask[];
+  int * mask;
 } ahudate_mask_t;
 
 ahudate_mask_t *
 make_ahudate_mask (char *s)
 {
   char c;
+  int slen = (int) strlen (s);
   ahudate_mask_t * m = malloc (sizeof (ahudate_mask_t));
+
+  m->mask = malloc (slen * sizeof (int));
   m->size = 0;
 
-  for (int i = 0; i < (int) strlen (s); i++)
+  for (int i = 0; i < slen; i++)
     {
       c = s[i];
 
@@ -95,12 +98,19 @@ make_ahudate_mask (char *s)
   return m;
 }
 
+void
+unmake_ahudate_mask (ahudate_mask_t * m)
+{
+  free (m->mask);
+  free (m);
+}
+
 int
 ahudate_is_yyyy_mm_dd (char *s)
 {
   ahudate_mask_t * m = make_ahudate_mask ("dddd/dd/dd");
   int n = ahudate_is_mask_valid (s, m->mask, m->size);
-  free (m);
+  unmake_ahudate_mask (m);
 
   return n;
 }
@@ -156,19 +166,19 @@ main (int argc, char *argv[])
   /* RFC-822/RFC-2822 format */
   // strftime(buf, sizeof(buf), "%a, %d %b %Y %H:%M:%S %z", localtime(t));
 
-  // struct tm * time;
-  /* time_t t; */
-  /* struct tm tm; */
-  /* // char *buf = "Wed, 02 Oct 2002 13:00:00 GMT"; */
-  /* // strptime (buf, "%a, %d %b %Y %H:%M:%S %z", time); */
-  /* if (strptime ("6 Dec 2001 12:33:45", "%d %b %Y %H:%M:%S", &tm) == NULL) */
-  /*   { */
-  /*     fprintf (stderr, "Failed to run strptime!\n"); */
-  /*     exit (EXIT_FAILURE); */
-  /*   } */
+  //   struct tm * time;
+  time_t t;
+  struct tm tm;
+  // char *buf = "Wed, 02 Oct 2002 13:00:00 GMT";
+  // strptime (buf, "%a, %d %b %Y %H:%M:%S %z", time);
+  if (strptime ("6 Dec 2001 12:33:45", "%d %b %Y %H:%M:%S", &tm) == NULL)
+    {
+      fprintf (stderr, "Failed to run strptime!\n");
+      exit (EXIT_FAILURE);
+    }
 
-  /* t = mktime (&tm); */
-  /* fprintf (stderr, "The date in epoch is: %ld\n", (long) t); */
+  t = mktime (&tm);
+  fprintf (stderr, "The date in epoch is: %ld\n", (long) t);
 
   exit (EXIT_SUCCESS);
 }
