@@ -1,3 +1,7 @@
+// Breaks int64_t
+// #define _XOPEN_SOURCE
+// #include <time.h>
+
 #include "string.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -142,6 +146,29 @@ main (int argc, char *argv[])
       fprintf (stderr, "Was it valid?: %d\n", ahudate_is_yyyy_mm_dd (argv[i]));
       fprintf (stderr, "To epoch: %ld\n", ahudate_year_to_epoch (year));
     }
+
+  /* RFC-3339 format */
+  // strftime(buf, sizeof(buf), "%Y-%m-%dT%H:%M:%SZ", gmtime(t));
+
+  /* ISO-8601 local time */
+  // strftime(buf, sizeof(buf), "%Y-%m-%dT%H:%M:%S", localtime(t));
+
+  /* RFC-822/RFC-2822 format */
+  // strftime(buf, sizeof(buf), "%a, %d %b %Y %H:%M:%S %z", localtime(t));
+
+  // struct tm * time;
+  /* time_t t; */
+  /* struct tm tm; */
+  /* // char *buf = "Wed, 02 Oct 2002 13:00:00 GMT"; */
+  /* // strptime (buf, "%a, %d %b %Y %H:%M:%S %z", time); */
+  /* if (strptime ("6 Dec 2001 12:33:45", "%d %b %Y %H:%M:%S", &tm) == NULL) */
+  /*   { */
+  /*     fprintf (stderr, "Failed to run strptime!\n"); */
+  /*     exit (EXIT_FAILURE); */
+  /*   } */
+
+  /* t = mktime (&tm); */
+  /* fprintf (stderr, "The date in epoch is: %ld\n", (long) t); */
 
   exit (EXIT_SUCCESS);
 }
