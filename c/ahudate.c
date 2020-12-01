@@ -21,27 +21,106 @@ ahudate_is_numeric (char c)
 }
 
 int
-ahudate_is_yyyy_mm_dd (char *s, char sep)
+ahudate_is_separator (char c)
 {
-  for (int i = 0; i < (int) strlen (s); i++)
+  return ' ' == c || '/' == c || '-' == c;
+}
+
+enum masks {
+  is_numeric,
+  is_separator
+};
+
+int
+ahudate_is_x (char c, int i)
+{
+  switch (i)
     {
-      if ((i == 4 || i == 7) && s[i] == sep)
-        {
-          continue;
-        }
+    case is_numeric:
+      return ahudate_is_numeric (c);
 
-      if (! ahudate_is_numeric (s[i]))
-        {
-          return 0;
-        }
-
-      if (i >= 9)
-        {
-          return 1;
-        }
+    case is_separator:
+      return ahudate_is_separator (c);
     }
 
   return 0;
+}
+
+int
+ahudate_is_mask_valid (char *s, int masks[], int mask_size)
+{
+  for (int i = 0; i < mask_size; i++)
+    {
+      if (! ahudate_is_x (s[i], masks[i]))
+        {
+          return 0;
+        }
+    }
+
+  return 1;
+}
+
+typedef struct ahudate_mask {
+  int size;
+  int mask[];
+} ahudate_mask_t;
+
+ahudate_mask_t *
+make_ahudate_mask (char *s)
+{
+  char c;
+  ahudate_mask_t * m = malloc (sizeof (ahudate_mask_t));
+  m->size = 0;
+
+  for (int i = 0; i < (int) strlen (s); i++)
+    {
+      c = s[i];
+
+      switch (c)
+        {
+        case 'd':
+          m->mask[i] = is_numeric;
+          break;
+        case '/':
+          m->mask[i] = is_separator;
+          break;
+        }
+      m->size = i;
+    }
+
+  return m;
+}
+
+int
+ahudate_is_yyyy_mm_dd (char *s, char sep)
+{
+  /* int mask[] = { is_numeric, is_numeric, is_numeric, is_numeric, is_separator }; */
+
+  /* return xahudate_is_yyyy_mm_dd ("2020/10/10", mask, 2); */
+  ahudate_mask_t * m = make_ahudate_mask ("dddd/dd/dd");
+
+  return ahudate_is_mask_valid ("2020/10/10", m->mask, m->size);
+  // return xahudate_is_yyyy_mm_dd ("2020/1/10", m->mask, m->size);
+
+  /* for (int i = 0; i < (int) strlen (s); i++) */
+  /*   { */
+  /*     if ((i == 4 || i == 7) && s[i] == sep) */
+  /*       { */
+  /*         continue; */
+  /*       } */
+
+  /*     if (! ahudate_is_numeric (s[i])) */
+  /*       { */
+  /*         return 0; */
+  /*       } */
+
+  /*     if (i >= 9) */
+  /*       { */
+  /*         return 1; */
+  /*       } */
+  /*   } */
+
+  /* return 0; */
 }
 
 int
