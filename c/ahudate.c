@@ -6,6 +6,9 @@
 #include <stdlib.h>
 
 // https://en.wikipedia.org/wiki/Year_2038_problem
+// This calculation works only when leap year is used as reference,
+// as the 'date' CLI program properly accounts for every 4th year (1974 etc.)
+// adding the extra day, where my attempt here adds for each quarter of year
 int64_t
 ahudate_year_to_epoch (char * year)
 {
@@ -136,6 +139,8 @@ ahudate_get_year (char *s, char *year)
   return 0;
 }
 
+// Test output like this
+//   date -d "1974-01-01 00:00:00+0" "+%s"
 int
 main (int argc, char *argv[])
 {
