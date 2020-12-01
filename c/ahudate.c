@@ -5,6 +5,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define DAY_SECONDS 24 * 60 * 60
+#define YEAR_SECONDS DAY_SECONDS * 365
+
 // https://en.wikipedia.org/wiki/Year_2038_problem
 // This calculation works only when leap year is used as reference,
 // as the 'date' CLI program properly accounts for every 4th year (1974 etc.)
@@ -13,10 +16,14 @@ int64_t
 ahudate_year_to_epoch (char * year)
 {
   int64_t y = atoi (year);
+  int64_t year_diff = y - 1970;
+  int64_t year_leap = year_diff / 4;
 
   fprintf (stderr, "The year was: %ld\n", y);
+  fprintf (stderr, "The leap years were: %ld\n", year_leap);
 
-  return (int64_t) ((y - 1970) * 365.25 * 24 * 60 * 60);
+  // return (int64_t) ((y - 1970) * 365.25 * 24 * 60 * 60);
+  return (int64_t) (year_diff * YEAR_SECONDS) + (year_leap * DAY_SECONDS);
 }
 
 int
