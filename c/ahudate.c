@@ -55,9 +55,9 @@ ahudate_datetime_to_epoch (ahudate_datetime_t * m)
     case 6: month_days = 151; break;
     case 7: month_days = 181; break;
     case 8: month_days = 212; break;
-    case 9: month_days = 242; break;
+    case 9: month_days = 243; break;
     case 10: month_days = 273; break;
-    case 11: month_days = 303; break;
+    case 11: month_days = 304; break;
     case 12: month_days = 334; break;
     }
 
@@ -243,7 +243,7 @@ main (int argc, char *argv[])
 
   ahudate_datetime_t * dt = malloc (sizeof (ahudate_datetime_t));
   dt->y = 1972;
-  dt->m = 3;
+  dt->m = 9;
   dt->d = 11;
   int64_t dt_epoch = ahudate_datetime_to_epoch (dt);
   fprintf (stderr, "The datetime in epoch is: %ld\n", (long) dt_epoch);
