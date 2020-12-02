@@ -11,6 +11,7 @@
 
 #define DAY_SECONDS (24 * 60 * 60)
 #define YEAR_SECONDS (DAY_SECONDS * 365)
+#define is_leap(year) ((year) % 4 == 0 && ((year) % 100 != 0 || (year) % 400 == 0))
 
 // https://en.wikipedia.org/wiki/Year_2038_problem
 // This calculation works only when leap year is used as reference,
@@ -21,12 +22,22 @@ ahudate_year_to_epoch (char * year)
 {
   int64_t y = atoi (year);
   int64_t year_diff = y - 1970;
-  int64_t year_leap = year_diff / 4;
-  int64_t year_leap_ignore = year_diff / 100;
-  int64_t year_leap_ignore_ignore = year_diff / 400;
+  int64_t year_leap = 0;
 
-  year_leap -= year_leap_ignore;
-  year_leap += year_leap_ignore_ignore;
+  if (y > 1970)
+    {
+      for (int year = 1970; year < y; year++)
+        {
+          if (is_leap(year)) year_leap++;
+        }
+    }
+  else
+    {
+      for (int year = y; year < 1970; year++)
+        {
+          if (is_leap(year)) year_leap--;
+        }
+    }
 
   fprintf (stderr, "The year was: %ld\n", y);
   fprintf (stderr, "The leap years were: %ld\n", year_leap);
@@ -45,12 +56,13 @@ ahudate_datetime_t *
 ahudate_epoch_to_datetime (int64_t n)
 {
   int years = n / (365 * DAY_SECONDS);
+  // FIXME: Have to account for the 100/400 leap year logic
   int leap_year_seconds = (years / 4) * DAY_SECONDS;
   int seconds_no_year = n - (years * 365 * DAY_SECONDS) - leap_year_seconds;
   int day = seconds_no_year / DAY_SECONDS;
   int month = 0;
   int year = 1970 + years;
-  int leap = (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)) ? 1 : 0;
+  int leap = is_leap(year);
 
   if (day >= 0 && day <= 31) { month = 1; day -= 0; }
   else if (day > 31 && day <= 59 + leap) { month = 2; day -= 31; }
