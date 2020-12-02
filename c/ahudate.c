@@ -1,7 +1,11 @@
 #define _XOPEN_SOURCE 700
 #include <time.h>
 
-#include "string.h"
+// Add flag: -DNDEBUG
+//   to disable assertions
+#include <assert.h>
+
+#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -89,6 +93,7 @@ ahudate_is_separator (char c)
 }
 
 enum masks {
+  is_capture,
   is_numeric,
   is_separator
 };
@@ -103,6 +108,9 @@ ahudate_is_x (char c, int i)
 
     case is_separator:
       return ahudate_is_separator (c);
+
+    case is_capture:
+      return 1;
     }
 
   return 0;
@@ -144,6 +152,9 @@ make_ahudate_mask (char *s)
 
       switch (c)
         {
+        case '_':
+          m->mask[i] = is_capture;
+          break;
         case 'd':
           m->mask[i] = is_numeric;
           break;
@@ -162,6 +173,41 @@ unmake_ahudate_mask (ahudate_mask_t * m)
 {
   free (m->mask);
   free (m);
+}
+
+int
+ahudate_mask_capture (char *s, char *mask, char *o)
+{
+  ahudate_mask_t * m = make_ahudate_mask (mask);
+
+  if (NULL == realloc (o, sizeof (char)))
+    {
+      fprintf (stderr, "Failed to realloc!\n");
+    }
+
+  int c = 0;
+
+  for (int i = 0; i < m->size; i++)
+    {
+      if (! ahudate_is_x (s[i], m->mask[i]))
+        {
+          return 0;
+        }
+
+      if (is_capture == m->mask[i])
+        {
+          if (NULL == realloc (o, sizeof (char) * (c + 2)))
+            {
+              fprintf (stderr, "Failed to realloc!\n");
+            }
+
+          o[c++] = s[i];
+          o[c] = '\0';
+        }
+    }
+  unmake_ahudate_mask (m);
+
+  return 1;
 }
 
 int
@@ -247,6 +293,14 @@ main (int argc, char *argv[])
   dt->d = 11;
   int64_t dt_epoch = ahudate_datetime_to_epoch (dt);
   fprintf (stderr, "The datetime in epoch is: %ld\n", (long) dt_epoch);
+
+  // ahudate_mask_t * m = make_ahudate_mask ("____/dd/dd");
+  char *mask_capture = malloc (sizeof (char));
+  ahudate_mask_capture ("1982/10/09", "____/dd/dd", mask_capture);
+  // unmake_ahudate_mask (m);
+  assert (strcmp (mask_capture, "1982") == 0);
+
+  fprintf (stderr, "Result of mask capture is: %s\n", mask_capture);
 
   exit (EXIT_SUCCESS);
 }
