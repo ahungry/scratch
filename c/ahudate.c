@@ -11,6 +11,12 @@
 
 #define DAY_SECONDS (24 * 60 * 60)
 #define YEAR_SECONDS (DAY_SECONDS * 365)
+#define LEAP_YEARS_EPOCH ((1970 / 4) - (1970 / 100) + (1970 / 400))
+
+// We have to subtract one from the year, because if it was '2000', we didn't have that leap
+// until we actually reached 2001.
+#define calc_leap_years(year) \
+  ((((year) - 1) / 4 - ((year) - 1) / 100 + ((year) - 1) / 400) - LEAP_YEARS_EPOCH)
 #define is_leap(year) ((year) % 4 == 0 && ((year) % 100 != 0 || (year) % 400 == 0))
 
 // https://en.wikipedia.org/wiki/Year_2038_problem
@@ -42,8 +48,12 @@ ahudate_year_to_epoch (char * year)
   fprintf (stderr, "The year was: %ld\n", y);
   fprintf (stderr, "The leap years were: %ld\n", year_leap);
 
-  // return (int64_t) ((y - 1970) * 365.25 * 24 * 60 * 60);
-  return (int64_t) (year_diff * YEAR_SECONDS) + (year_leap * DAY_SECONDS);
+
+  int64_t x = calc_leap_years (y);
+  fprintf (stderr, "The smarter leap years were: %ld \n", x);
+
+  // return (int64_t) (year_diff * YEAR_SECONDS) + (year_leap * DAY_SECONDS);
+  return (int64_t) (year_diff * YEAR_SECONDS) + (x * DAY_SECONDS);
 }
 
 typedef struct ahudate_datetime {
@@ -103,7 +113,7 @@ ahudate_datetime_to_epoch (ahudate_datetime_t * m)
   // The leap year calculation seems to work, although basing it off epoch
   // seems odd in hindsight, as 1970 wasn't itself a leap year...
   int64_t year_diff = m->y - 1970;
-  int64_t year_leap = year_diff / 4;
+  int64_t year_leap = calc_leap_years (m->y);
   int64_t epoch_year = (int64_t) (year_diff * YEAR_SECONDS) + (year_leap * DAY_SECONDS);
 
   // calculate the month epoch
