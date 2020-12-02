@@ -9,8 +9,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define DAY_SECONDS 24 * 60 * 60
-#define YEAR_SECONDS DAY_SECONDS * 365
+#define DAY_SECONDS (24 * 60 * 60)
+#define YEAR_SECONDS (DAY_SECONDS * 365)
 
 // https://en.wikipedia.org/wiki/Year_2038_problem
 // This calculation works only when leap year is used as reference,
@@ -35,6 +35,44 @@ typedef struct ahudate_datetime {
   int64_t m;
   int64_t d;
 } ahudate_datetime_t;
+
+int64_t
+ahudate_epoch_to_datetime (int64_t n)
+{
+  int years = n / (365 * DAY_SECONDS);
+  int leap_year_seconds = (years / 4) * DAY_SECONDS;
+  int seconds_no_year = n - (years * 365 * DAY_SECONDS) + leap_year_seconds;
+  int day = seconds_no_year / DAY_SECONDS;
+  int month = 0;
+  int year = 1970 + years;
+  int leap = year % 4 == 0 ? 1 : 0;
+
+  if (day >= 0 && day <= 31) { month = 1; day -= 0; }
+  if (day > 31 && day <= 59 + leap) { month = 2; day -= 31; }
+  if (day > 59 + leap && day <= 90 + leap) { month = 3; day -= 59 + leap; }
+  if (day > 90 + leap && day <= 120 + leap) { month = 4; day -= 90 + leap; }
+  if (day > 120 + leap && day <= 151 + leap) { month = 5; day -= 120 + leap; }
+  if (day > 151 + leap && day <= 181 + leap) { month = 6; day -= 151 + leap; }
+  if (day > 181 + leap && day <= 212 + leap) { month = 7; day -= 181 + leap; }
+  if (day > 212 + leap && day <= 243 + leap) { month = 8; day -= 212 + leap; }
+  if (day > 243 + leap && day <= 273 + leap) { month = 9; day -= 243 + leap; }
+  if (day > 273 + leap && day <= 304 + leap) { month = 10; day -= 273 + leap; }
+  if (day > 304 + leap && day <= 334 + leap) { month = 11; day -= 304 + leap; }
+  if (day > 334 + leap && day <= 365 + leap) { month = 12; day -= 334 + leap; }
+
+  // It always calculates to be one less than it is
+  day++;
+
+  fprintf (stderr, "years: %ld year: %d lys: %ld month: %ld day: %ld leap: %ld\n",
+           (long) years,
+           year,
+           (long) leap_year_seconds,
+           (long) month,
+           (long) day,
+           (long) leap);
+
+  return 1970 + years;
+}
 
 int64_t
 ahudate_datetime_to_epoch (ahudate_datetime_t * m)
@@ -162,7 +200,7 @@ make_ahudate_mask (char *s)
           m->mask[i] = is_separator;
           break;
         }
-      m->size = i;
+      m->size = i + 1;
     }
 
   return m;
@@ -175,9 +213,10 @@ unmake_ahudate_mask (ahudate_mask_t * m)
   free (m);
 }
 
-int
-ahudate_mask_capture (char *s, char *mask, char *o)
+char *
+ahudate_mask_capture (char *s, char *mask)
 {
+  char *o = malloc (1);
   ahudate_mask_t * m = make_ahudate_mask (mask);
 
   if (NULL == realloc (o, sizeof (char)))
@@ -191,7 +230,7 @@ ahudate_mask_capture (char *s, char *mask, char *o)
     {
       if (! ahudate_is_x (s[i], m->mask[i]))
         {
-          return 0;
+          return NULL;
         }
 
       if (is_capture == m->mask[i])
@@ -207,7 +246,7 @@ ahudate_mask_capture (char *s, char *mask, char *o)
     }
   unmake_ahudate_mask (m);
 
-  return 1;
+  return o;
 }
 
 int
@@ -287,6 +326,7 @@ main (int argc, char *argv[])
   t = mktime (&tm);
   fprintf (stderr, "The date in epoch is: %ld\n", (long) t);
 
+  // Turn a dt into an epoch
   ahudate_datetime_t * dt = malloc (sizeof (ahudate_datetime_t));
   dt->y = 1972;
   dt->m = 9;
@@ -294,12 +334,21 @@ main (int argc, char *argv[])
   int64_t dt_epoch = ahudate_datetime_to_epoch (dt);
   fprintf (stderr, "The datetime in epoch is: %ld\n", (long) dt_epoch);
 
+  // Turn an epoch into a dt
+  int64_t year = ahudate_epoch_to_datetime (dt_epoch);
+  fprintf (stderr, "The year from epoch datetime is: %ld\n", (long) year);
+
   // ahudate_mask_t * m = make_ahudate_mask ("____/dd/dd");
-  char *mask_capture = malloc (sizeof (char));
-  ahudate_mask_capture ("1982/10/09", "____/dd/dd", mask_capture);
+  // char *mask_capture = malloc (sizeof (char));
+  char *mask_capture = ahudate_mask_capture ("1982/10/09", "____/dd/dd");
   // unmake_ahudate_mask (m);
   assert (strcmp (mask_capture, "1982") == 0);
-
+  assert (strcmp (ahudate_mask_capture ("1982/10/09", "____/dd/dd"), "1982") == 0);
+  assert (strcmp (ahudate_mask_capture ("1982/10/09", "dddd/__/dd"), "10") == 0);
+  assert (strcmp (ahudate_mask_capture ("1982/10/09", "dddd/dd/__"), "09") == 0);
+  assert (strcmp (ahudate_mask_capture ("1982-10-09", "____-dd-dd"), "1982") == 0);
+  assert (strcmp (ahudate_mask_capture ("1982-10-09", "dddd-__-dd"), "10") == 0);
+  assert (strcmp (ahudate_mask_capture ("1982-10-09", "dddd-dd-__"), "09") == 0);
   fprintf (stderr, "Result of mask capture is: %s\n", mask_capture);
 
   exit (EXIT_SUCCESS);
