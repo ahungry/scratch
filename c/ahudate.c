@@ -31,12 +31,12 @@ ahudate_year_to_epoch (char * year)
 }
 
 typedef struct ahudate_datetime {
-  int64_t y;
-  int64_t m;
-  int64_t d;
+  int y;
+  int m;
+  int d;
 } ahudate_datetime_t;
 
-int64_t
+ahudate_datetime_t *
 ahudate_epoch_to_datetime (int64_t n)
 {
   int years = n / (365 * DAY_SECONDS);
@@ -71,7 +71,12 @@ ahudate_epoch_to_datetime (int64_t n)
            (long) day,
            (long) leap);
 
-  return 1970 + years;
+  ahudate_datetime_t * dt = malloc (sizeof (ahudate_datetime_t));
+  dt->y = year;
+  dt->m = month;
+  dt->d = day;
+
+  return dt;
 }
 
 int64_t
@@ -335,8 +340,12 @@ main (int argc, char *argv[])
   fprintf (stderr, "The datetime in epoch is: %ld\n", (long) dt_epoch);
 
   // Turn an epoch into a dt
-  int64_t year = ahudate_epoch_to_datetime (dt_epoch);
-  fprintf (stderr, "The year from epoch datetime is: %ld\n", (long) year);
+  ahudate_datetime_t * dt1 = ahudate_epoch_to_datetime (dt_epoch);
+  fprintf (stderr, "From epoch datetime is: year: %d month: %d day: %d\n",
+           dt1->y,
+           dt1->m,
+           dt1->d
+           );
 
   // ahudate_mask_t * m = make_ahudate_mask ("____/dd/dd");
   // char *mask_capture = malloc (sizeof (char));
