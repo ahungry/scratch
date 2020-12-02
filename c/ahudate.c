@@ -48,17 +48,17 @@ ahudate_epoch_to_datetime (int64_t n)
   int leap = year % 4 == 0 ? 1 : 0;
 
   if (day >= 0 && day <= 31) { month = 1; day -= 0; }
-  if (day > 31 && day <= 59 + leap) { month = 2; day -= 31; }
-  if (day > 59 + leap && day <= 90 + leap) { month = 3; day -= 59 + leap; }
-  if (day > 90 + leap && day <= 120 + leap) { month = 4; day -= 90 + leap; }
-  if (day > 120 + leap && day <= 151 + leap) { month = 5; day -= 120 + leap; }
-  if (day > 151 + leap && day <= 181 + leap) { month = 6; day -= 151 + leap; }
-  if (day > 181 + leap && day <= 212 + leap) { month = 7; day -= 181 + leap; }
-  if (day > 212 + leap && day <= 243 + leap) { month = 8; day -= 212 + leap; }
-  if (day > 243 + leap && day <= 273 + leap) { month = 9; day -= 243 + leap; }
-  if (day > 273 + leap && day <= 304 + leap) { month = 10; day -= 273 + leap; }
-  if (day > 304 + leap && day <= 334 + leap) { month = 11; day -= 304 + leap; }
-  if (day > 334 + leap && day <= 365 + leap) { month = 12; day -= 334 + leap; }
+  else if (day > 31 && day <= 59 + leap) { month = 2; day -= 31; }
+  else if (day > 59 + leap && day <= 90 + leap) { month = 3; day -= 59 + leap; }
+  else if (day > 90 + leap && day <= 120 + leap) { month = 4; day -= 90 + leap; }
+  else if (day > 120 + leap && day <= 151 + leap) { month = 5; day -= 120 + leap; }
+  else if (day > 151 + leap && day <= 181 + leap) { month = 6; day -= 151 + leap; }
+  else if (day > 181 + leap && day <= 212 + leap) { month = 7; day -= 181 + leap; }
+  else if (day > 212 + leap && day <= 243 + leap) { month = 8; day -= 212 + leap; }
+  else if (day > 243 + leap && day <= 273 + leap) { month = 9; day -= 243 + leap; }
+  else if (day > 273 + leap && day <= 304 + leap) { month = 10; day -= 273 + leap; }
+  else if (day > 304 + leap && day <= 334 + leap) { month = 11; day -= 304 + leap; }
+  else if (day > 334 + leap && day <= 365 + leap) { month = 12; day -= 334 + leap; }
 
   // It always calculates to be one less than it is
   day++;
