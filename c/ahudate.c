@@ -110,8 +110,6 @@ int64_t
 ahudate_datetime_to_epoch (ahudate_datetime_t * m)
 {
   // calculate the year epoch
-  // The leap year calculation seems to work, although basing it off epoch
-  // seems odd in hindsight, as 1970 wasn't itself a leap year...
   int64_t year_diff = m->y - 1970;
   int64_t year_leap = calc_leap_years (m->y);
   int64_t epoch_year = (int64_t) (year_diff * YEAR_SECONDS) + (year_leap * DAY_SECONDS);
@@ -315,7 +313,7 @@ ahudate_get_year (char *s, char *year)
 // Test output like this
 //   date -d "1974-01-01 00:00:00+0" "+%s"
 int
-main (int argc, char *argv[])
+xmain (int argc, char *argv[])
 {
   for (int i = 1; i < argc; i++)
     {
@@ -386,6 +384,60 @@ main (int argc, char *argv[])
   assert (strcmp (ahudate_mask_capture ("1982-10-09", "dddd-__-dd"), "10") == 0);
   assert (strcmp (ahudate_mask_capture ("1982-10-09", "dddd-dd-__"), "09") == 0);
   fprintf (stderr, "Result of mask capture is: %s\n", mask_capture);
+
+  exit (EXIT_SUCCESS);
+}
+
+int
+main (int argc, char *argv[])
+{
+  // Happens in 0.04
+  // Turn a dt into an epoch
+  ahudate_datetime_t * dt = malloc (sizeof (ahudate_datetime_t));
+  dt->m = 1;
+  dt->d = 1;
+
+  // With loop and print, 3.99 seconds, with no print, 0.036
+  for (int a = 1; a < 100; a++)
+    {
+      for (int i = 1; i < 9999; i++)
+        {
+          dt->y = i;
+          int64_t dt_epoch = ahudate_datetime_to_epoch (dt);
+          fprintf (stdout, "%lld\n", (long long int) dt_epoch);
+        }
+    }
+
+  /* struct tm { */
+  /*  int tm_sec;         /\* seconds,  range 0 to 59          *\/ */
+  /*  int tm_min;         /\* minutes, range 0 to 59           *\/ */
+  /*  int tm_hour;        /\* hours, range 0 to 23             *\/ */
+  /*  int tm_mday;        /\* day of the month, range 1 to 31  *\/ */
+  /*  int tm_mon;         /\* month, range 0 to 11             *\/ */
+  /*  int tm_year;        /\* The number of years since 1900   *\/ */
+  /*  int tm_wday;        /\* day of the week, range 0 to 6    *\/ */
+  /*  int tm_yday;        /\* day in the year, range 0 to 365  *\/ */
+  /*  int tm_isdst;       /\* daylight saving time             *\/ */
+  /* }; */
+
+  // Taking 0.65 to complete, something must be messed up, mktime.janet happens in 0.2
+  /* time_t t; */
+  /* struct tm tm; */
+  /* tm.tm_sec = 0; */
+  /* tm.tm_min = 0; */
+  /* tm.tm_hour = 0; */
+  /* tm.tm_mday = 0; */
+  /* tm.tm_mon = 0; */
+  /* tm.tm_wday = 0; */
+  /* tm.tm_yday = 0; */
+  /* tm.tm_isdst = 1; */
+
+  /* for (int i = 1; i < 9999; i++) */
+  /*   { */
+  /*     tm.tm_year = i - 1900; */
+  /*     t = mktime (&tm); */
+  /*     fprintf (stdout, "%ld\n", (long) t); */
+  /*   } */
 
   exit (EXIT_SUCCESS);
 }
