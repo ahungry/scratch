@@ -430,13 +430,17 @@ main (int argc, char *argv[])
   /* tm.tm_mon = 0; */
   /* tm.tm_wday = 0; */
   /* tm.tm_yday = 0; */
-  /* tm.tm_isdst = 1; */
+  /* tm.tm_isdst = 0; */
 
-  /* for (int i = 1; i < 9999; i++) */
+  /* // With the loop approach and NOT printing, 5.632, very slow */
+  /* for (int a = 1; a < 100; a++) */
   /*   { */
-  /*     tm.tm_year = i - 1900; */
-  /*     t = mktime (&tm); */
-  /*     fprintf (stdout, "%ld\n", (long) t); */
+  /*     for (int i = 1; i < 9999; i++) */
+  /*       { */
+  /*         tm.tm_year = i - 1900; */
+  /*         t = mktime (&tm); */
+  /*         // fprintf (stdout, "%ld\n", (long) t); */
+  /*       } */
   /*   } */
 
   exit (EXIT_SUCCESS);
