@@ -22,6 +22,11 @@ ahudate_year_to_epoch (char * year)
   int64_t y = atoi (year);
   int64_t year_diff = y - 1970;
   int64_t year_leap = year_diff / 4;
+  int64_t year_leap_ignore = year_diff / 100;
+  int64_t year_leap_ignore_ignore = year_diff / 400;
+
+  year_leap -= year_leap_ignore;
+  year_leap += year_leap_ignore_ignore;
 
   fprintf (stderr, "The year was: %ld\n", y);
   fprintf (stderr, "The leap years were: %ld\n", year_leap);
@@ -45,7 +50,7 @@ ahudate_epoch_to_datetime (int64_t n)
   int day = seconds_no_year / DAY_SECONDS;
   int month = 0;
   int year = 1970 + years;
-  int leap = year % 4 == 0 ? 1 : 0;
+  int leap = (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)) ? 1 : 0;
 
   if (day >= 0 && day <= 31) { month = 1; day -= 0; }
   else if (day > 31 && day <= 59 + leap) { month = 2; day -= 31; }
