@@ -41,7 +41,7 @@ ahudate_epoch_to_datetime (int64_t n)
 {
   int years = n / (365 * DAY_SECONDS);
   int leap_year_seconds = (years / 4) * DAY_SECONDS;
-  int seconds_no_year = n - (years * 365 * DAY_SECONDS) + leap_year_seconds;
+  int seconds_no_year = n - (years * 365 * DAY_SECONDS) - leap_year_seconds;
   int day = seconds_no_year / DAY_SECONDS;
   int month = 0;
   int year = 1970 + years;
@@ -328,9 +328,9 @@ main (int argc, char *argv[])
 
   // Turn a dt into an epoch
   ahudate_datetime_t * dt = malloc (sizeof (ahudate_datetime_t));
-  dt->y = 1972;
-  dt->m = 9;
-  dt->d = 11;
+  dt->y = 2020;
+  dt->m = 2;
+  dt->d = 29;
   int64_t dt_epoch = ahudate_datetime_to_epoch (dt);
   fprintf (stderr, "The datetime in epoch is: %ld\n", (long) dt_epoch);
 
