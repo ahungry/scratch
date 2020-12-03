@@ -266,6 +266,8 @@ ahudate_mask_capture (char *s, char *mask)
     {
       if (! ahudate_is_x (s[i], m->mask[i]))
         {
+          unmake_ahudate_mask (m);
+
           return NULL;
         }
 
@@ -398,9 +400,20 @@ xmain (int argc, char *argv[])
 int
 main (int argc, char *argv[])
 {
-  int year = atoi (ahudate_mask_capture (argv[1], "____-dd-dd"));
-  int month = atoi (ahudate_mask_capture (argv[1], "dddd-__-dd"));
-  int day = atoi (ahudate_mask_capture (argv[1], "dddd-dd-__"));
+  char *sy = ahudate_mask_capture (argv[1], "____-dd-dd");
+  char *sm = ahudate_mask_capture (argv[1], "dddd-__-dd");
+  char *sd = ahudate_mask_capture (argv[1], "dddd-dd-__");
+
+  if (NULL == sy || NULL == sm || NULL == sd)
+    {
+      fprintf (stderr, "Invalid input dates\n");
+
+      exit (EXIT_FAILURE);
+    }
+
+  int year = atoi (sy);
+  int month = atoi (sm);
+  int day = atoi (sd);
 
   ahudate_datetime_t * dt = malloc (sizeof (ahudate_datetime_t));
   dt->m = month;
@@ -408,9 +421,9 @@ main (int argc, char *argv[])
   dt->y = year;
 
   int64_t dt_epoch = ahudate_datetime_to_epoch (dt);
-  fprintf (stdout, "argv: %s\n", argv[1]);
-  fprintf (stdout, "atoi: %d\n", atoi ("11"));
-  fprintf (stdout, "year: %d, month: %d, day: %d\n", year, month, day);
+  /* fprintf (stdout, "argv: %s\n", argv[1]); */
+  /* fprintf (stdout, "atoi: %d\n", atoi ("11")); */
+  /* fprintf (stdout, "year: %d, month: %d, day: %d\n", year, month, day); */
   fprintf (stdout, "%lld\n", (long long int) dt_epoch);
 
   exit (EXIT_SUCCESS);
