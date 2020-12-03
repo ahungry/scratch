@@ -4,7 +4,15 @@
           :year 0 :month-day 0 :hours 0 :week-day 0})
 
 # Start at 0001-01-01 epoch and work the way up to 1970-01-01
-(for x -62135596800 0
+(def start -62135596800)
+(var x start)
+(var asserts 0)
+
+# Set to '1' if you want to hit every possible second
+(defn increment-x []
+  (math/floor (* 1000000 (math/random))))
+
+(while (< x 0)
   (let [dt (os/date x)]
     (def mktime (os/mktime dt))
     (def cmd (string/format "./ahudate '%04d-%02d-%02d %02d:%02d:%02d'"
@@ -26,7 +34,15 @@
                       " '+%s'"))
     (def ahudate (:read (file/popen cmd) :all))
     (def date (:read (file/popen cmd2) :all))
-    (pp cmd)
+
+    (set x (+ x (increment-x)))
+    (set asserts (inc asserts))
+
+    # Just print every nth to speed it up
+    (when (= 0 (% x 100))
+      (printf "Total asserts: %d" asserts)
+      (pp cmd))
+
     # (pp cmd)
     # (pp cmd2)
     # (pp x)
