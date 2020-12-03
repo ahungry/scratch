@@ -4,7 +4,8 @@
           :year 0 :month-day 0 :hours 0 :week-day 0})
 
 # Start at 0001-01-01 epoch and work the way up to 1970-01-01
-(def start -62135596800)
+#(def start -62135596800)
+(def start -58979963789)
 (var x start)
 (var asserts 0)
 
@@ -54,4 +55,5 @@
       (pp cmd)
       (pp cmd2)
       (pp ahudate)
-      (pp date))))
+      (pp date)
+      (assert (deep= ahudate date)))))

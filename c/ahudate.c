@@ -143,7 +143,7 @@ ahudate_datetime_to_epoch (ahudate_datetime_t * m)
     }
 
   // Add the extra day if leap year
-  if (m->y % 4 == 0 && m->m > 2)
+  if (is_leap (m->y) && m->m > 2)
     {
       month_days++;
     }
