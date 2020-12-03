@@ -1,4 +1,5 @@
 #define _XOPEN_SOURCE 700
+#define _DEFAULT_SOURCE
 #include <time.h>
 
 // Add flag: -DNDEBUG
@@ -163,7 +164,8 @@ ahudate_is_separator (char c)
 enum masks {
   is_capture,
   is_numeric,
-  is_separator
+  is_separator,
+  is_mismatch
 };
 
 int
@@ -227,7 +229,11 @@ make_ahudate_mask (char *s)
           m->mask[i] = is_numeric;
           break;
         case '/':
+        case '-':
           m->mask[i] = is_separator;
+          break;
+        default:
+          m->mask[i] = is_mismatch;
           break;
         }
       m->size = i + 1;
@@ -274,6 +280,7 @@ ahudate_mask_capture (char *s, char *mask)
           o[c] = '\0';
         }
     }
+
   unmake_ahudate_mask (m);
 
   return o;
@@ -391,22 +398,43 @@ xmain (int argc, char *argv[])
 int
 main (int argc, char *argv[])
 {
+  int year = atoi (ahudate_mask_capture (argv[1], "____-dd-dd"));
+  int month = atoi (ahudate_mask_capture (argv[1], "dddd-__-dd"));
+  int day = atoi (ahudate_mask_capture (argv[1], "dddd-dd-__"));
+
+  ahudate_datetime_t * dt = malloc (sizeof (ahudate_datetime_t));
+  dt->m = month;
+  dt->d = day;
+  dt->y = year;
+
+  int64_t dt_epoch = ahudate_datetime_to_epoch (dt);
+  fprintf (stdout, "argv: %s\n", argv[1]);
+  fprintf (stdout, "atoi: %d\n", atoi ("11"));
+  fprintf (stdout, "year: %d, month: %d, day: %d\n", year, month, day);
+  fprintf (stdout, "%lld\n", (long long int) dt_epoch);
+
+  exit (EXIT_SUCCESS);
+}
+
+int
+ymain (int argc, char *argv[])
+{
   // Happens in 0.04
   // Turn a dt into an epoch
-  ahudate_datetime_t * dt = malloc (sizeof (ahudate_datetime_t));
-  dt->m = 1;
-  dt->d = 1;
+  /* ahudate_datetime_t * dt = malloc (sizeof (ahudate_datetime_t)); */
+  /* dt->m = 1; */
+  /* dt->d = 1; */
 
-  // With loop and print, 3.99 seconds, with no print, 0.036
-  for (int a = 1; a < 100; a++)
-    {
-      for (int i = 1; i < 9999; i++)
-        {
-          dt->y = i;
-          int64_t dt_epoch = ahudate_datetime_to_epoch (dt);
-          fprintf (stdout, "%lld\n", (long long int) dt_epoch);
-        }
-    }
+  /* // With loop and print, 3.99 seconds, with no print, 0.036 */
+  /* for (int a = 1; a < 100; a++) */
+  /*   { */
+  /*     for (int i = 1; i < 9999; i++) */
+  /*       { */
+  /*         dt->y = i; */
+  /*         int64_t dt_epoch = ahudate_datetime_to_epoch (dt); */
+  /*         fprintf (stdout, "%lld\n", (long long int) dt_epoch); */
+  /*       } */
+  /*   } */
 
   /* struct tm { */
   /*  int tm_sec;         /\* seconds,  range 0 to 59          *\/ */
@@ -421,27 +449,29 @@ main (int argc, char *argv[])
   /* }; */
 
   // Taking 0.65 to complete, something must be messed up, mktime.janet happens in 0.2
-  /* time_t t; */
-  /* struct tm tm; */
-  /* tm.tm_sec = 0; */
-  /* tm.tm_min = 0; */
-  /* tm.tm_hour = 0; */
-  /* tm.tm_mday = 0; */
-  /* tm.tm_mon = 0; */
-  /* tm.tm_wday = 0; */
-  /* tm.tm_yday = 0; */
-  /* tm.tm_isdst = 0; */
+  time_t t;
+  struct tm tm;
+  tm.tm_sec = 0;
+  tm.tm_min = 0;
+  tm.tm_hour = 0;
+  tm.tm_mday = 0;
+  tm.tm_mon = 0;
+  tm.tm_wday = 0;
+  tm.tm_yday = 0;
+  tm.tm_isdst = 0;
 
-  /* // With the loop approach and NOT printing, 5.632, very slow */
-  /* for (int a = 1; a < 100; a++) */
-  /*   { */
-  /*     for (int i = 1; i < 9999; i++) */
-  /*       { */
-  /*         tm.tm_year = i - 1900; */
-  /*         t = mktime (&tm); */
-  /*         // fprintf (stdout, "%ld\n", (long) t); */
-  /*       } */
-  /*   } */
+  // mktime: 14.360 with print, 5.702 without print
+  // timegm: to avoid TZ work is 5.503 with print, 0.227 without
+  for (int a = 1; a < 100; a++)
+    {
+      for (int i = 1; i < 9999; i++)
+        {
+          tm.tm_year = i - 1900;
+          t = mktime (&tm);
+          // t = timegm (&tm);
+          fprintf (stdout, "%ld\n", (long) t);
+        }
+    }
 
   exit (EXIT_SUCCESS);
 }
