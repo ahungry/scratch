@@ -5,7 +5,9 @@
 
 # Start at 0001-01-01 epoch and work the way up to 1970-01-01
 #(def start -62135596800)
-(def start -58979963789)
+#(def start -58979963789)
+(def start 0)
+(def end 253402300799)
 (var x start)
 (var asserts 0)
 
@@ -13,7 +15,7 @@
 (defn increment-x []
   (math/floor (* 1000000 (math/random))))
 
-(while (< x 0)
+(while (< x end)
   (let [dt (os/date x)]
     (def mktime (os/mktime dt))
     (def cmd (string/format "./ahudate '%04d-%02d-%02d %02d:%02d:%02d'"
@@ -40,7 +42,7 @@
     (set asserts (inc asserts))
 
     # Just print every nth to speed it up
-    (when (= 0 (% x 100))
+    (when (= 0 (% asserts 100))
       (printf "Total asserts: %d" asserts)
       (pp cmd))
 
