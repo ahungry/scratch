@@ -61,6 +61,9 @@ typedef struct ahudate_datetime {
   int y;
   int m;
   int d;
+  int h;
+  int i;
+  int s;
 } ahudate_datetime_t;
 
 ahudate_datetime_t *
@@ -104,6 +107,11 @@ ahudate_epoch_to_datetime (int64_t n)
   dt->m = month;
   dt->d = day;
 
+  // TODO: Implement
+  dt->h = 0;
+  dt->i = 0;
+  dt->s = 0;
+
   return dt;
 }
 
@@ -143,8 +151,10 @@ ahudate_datetime_to_epoch (ahudate_datetime_t * m)
   int64_t epoch_month = (int64_t) month_days * DAY_SECONDS;
   int64_t epoch_days = (int64_t) (m->d - 1) * DAY_SECONDS;
 
+  int remaining_time = (m->h * 3600) + (m->i * 60) + m->s;
+
   // return (int64_t) ((y - 1970) * 365.25 * 24 * 60 * 60);
-  return epoch_year + epoch_month + epoch_days;
+  return epoch_year + epoch_month + epoch_days + remaining_time;
 }
 
 
@@ -158,7 +168,7 @@ ahudate_is_numeric (char c)
 int
 ahudate_is_separator (char c)
 {
-  return ' ' == c || '/' == c || '-' == c;
+  return ' ' == c || '/' == c || '-' == c || ':' == c;
 }
 
 enum masks {
@@ -228,8 +238,10 @@ make_ahudate_mask (char *s)
         case 'd':
           m->mask[i] = is_numeric;
           break;
+        case ' ':
         case '/':
         case '-':
+        case ':':
           m->mask[i] = is_separator;
           break;
         default:
@@ -400,13 +412,18 @@ xmain (int argc, char *argv[])
 int
 main (int argc, char *argv[])
 {
-  char *sy = ahudate_mask_capture (argv[1], "____-dd-dd");
-  char *sm = ahudate_mask_capture (argv[1], "dddd-__-dd");
-  char *sd = ahudate_mask_capture (argv[1], "dddd-dd-__");
+  char *sy = ahudate_mask_capture (argv[1], "____-dd-dd dd:dd:dd");
+  char *sm = ahudate_mask_capture (argv[1], "dddd-__-dd dd:dd:dd");
+  char *sd = ahudate_mask_capture (argv[1], "dddd-dd-__ dd:dd:dd");
 
-  if (NULL == sy || NULL == sm || NULL == sd)
+  char *sh = ahudate_mask_capture (argv[1], "dddd-dd-dd __:dd:dd");
+  char *si = ahudate_mask_capture (argv[1], "dddd-dd-dd dd:__:dd");
+  char *ss = ahudate_mask_capture (argv[1], "dddd-dd-dd dd:dd:__");
+
+  if (NULL == sy || NULL == sm || NULL == sd ||
+      NULL == sh || NULL == si || NULL == ss)
     {
-      fprintf (stderr, "Invalid input dates\n");
+      fprintf (stderr, "Invalid input date '%s'\n", argv[1]);
 
       exit (EXIT_FAILURE);
     }
@@ -414,11 +431,17 @@ main (int argc, char *argv[])
   int year = atoi (sy);
   int month = atoi (sm);
   int day = atoi (sd);
+  int hour = atoi (sh);
+  int minute = atoi (si);
+  int second = atoi (ss);
 
   ahudate_datetime_t * dt = malloc (sizeof (ahudate_datetime_t));
   dt->m = month;
   dt->d = day;
   dt->y = year;
+  dt->h = hour;
+  dt->i = minute;
+  dt->s = second;
 
   int64_t dt_epoch = ahudate_datetime_to_epoch (dt);
   /* fprintf (stdout, "argv: %s\n", argv[1]); */
