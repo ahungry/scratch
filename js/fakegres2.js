@@ -10,6 +10,14 @@ function authPacket () {
   return buf
 }
 
+function syncPacket () {
+  const typ = [0x53]
+  const len = [0x0, 0x0, 0x0, 0x4]
+  const buf = Buffer.from([...typ, ...len], 'binary')
+
+  return buf
+}
+
 function makeStatusPacket (key, val) {
   const authStatusType = [0x53]
   const len = [0x0, 0x0, 0x0, key.length + 1 + val.length + 1 + 4]
@@ -155,6 +163,8 @@ net.createServer(function (socket) {
       console.log(buf)
       socket.write(authPacket())
       socket.write(makeReadyForQuery())
+      // TODO: Maybe add missing Type: Parse portion
+      socket.write(syncPacket())
       // socket.write(makeRowDescPacket(['fruit']))
       // socket.write(makeRowPacket(['apple']))
       // socket.write(makeCommandCompletePacket('SELECT 1'))
@@ -169,6 +179,7 @@ net.createServer(function (socket) {
       socket.write(makeRowDescPacket(['fruit']))
       socket.write(makeRowPacket(['apple']))
       socket.write(makeCommandCompletePacket('SELECT 1'))
+      socket.write(syncPacket())
       // socket.write(makeReadyForQuery())
     }
   })
