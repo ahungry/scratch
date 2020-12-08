@@ -126,10 +126,41 @@ net.createServer(function (socket) {
       socket.write(makeReadyForQuery())
     }
     else if (0x58 === buf[0]) {
+      // Normal connection from terminal
       console.log('Client disconnected!')
     }
-    else {
+    else if (0x27 === buf[3]) {
+      // Connection from PDO
+      console.log('PDO Client connected!')
+      socket.write(authPacket())
+      socket.write(makeReadyForQuery())
+    }
+    else if (0x3D === buf[3]) {
       // The stdin pipe to psql CLI
+      console.log('Pipe time!')
+      console.log(`Data received from client: ${chunk.toString()}`)
+      console.log(buf)
+      socket.write(authPacket())
+      socket.write(makeReadyForQuery())
+      socket.write(makeRowDescPacket(['fruit']))
+      socket.write(makeRowPacket(['apple']))
+      socket.write(makeCommandCompletePacket('SELECT 1'))
+      // socket.write(makeReadyForQuery())
+    }
+    else if (0x50 === buf[0]) {
+      // TODO: Get working
+      // A PDO statement
+      console.log('PDO prepared query time!')
+      console.log(`Data received from client: ${chunk.toString()}`)
+      console.log(buf)
+      socket.write(authPacket())
+      socket.write(makeReadyForQuery())
+      // socket.write(makeRowDescPacket(['fruit']))
+      // socket.write(makeRowPacket(['apple']))
+      // socket.write(makeCommandCompletePacket('SELECT 1'))
+      // socket.write(makeReadyForQuery())
+    }
+    else {
       console.log('Unknown time!')
       console.log(`Data received from client: ${chunk.toString()}`)
       console.log(buf)
