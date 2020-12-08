@@ -183,6 +183,8 @@ net.createServer(function (socket) {
     }
     else if (0x8 === buf[3]) {
       // Client wants SSL
+      // https://www.postgresql.org/docs/10/protocol-flow.html
+      // 52.2.9. SSL Session Encryption
       console.log('no SSL for you')
       socket.write(noSslPacket())
     }
