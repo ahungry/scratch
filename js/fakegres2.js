@@ -23,6 +23,40 @@ function makeStatusPacket (key, val) {
   return buf
 }
 
+// After the row desc, it sends the data
+function makeRowDescPacket (rowHeaders) {
+  const packetLength = 0x1E // TODO: Compute this
+  const fieldCount = rowHeaders.length
+  const type = [0x54]
+  const length = [0x0, 0x0, 0x0, packetLength]
+  const fieldCountPacket = [0x0, fieldCount]
+  const payData = new Uint32Array(Buffer.from(rowHeaders[0], 'binary'))
+  const buf = Buffer.from([
+    ...type, ...length, ...fieldCountPacket,
+    ...payData, 0x0,
+    0x0, 0x0, 0x40, 0x6,
+    0x0, 0x2,
+    0x0, 0x0, 0x4, 0x13,
+    0xff, 0xff,
+    0x0, 0x0, 0x0, 0x36,
+    0x0, 0x0], 'binary')
+
+  return buf
+}
+
+function makeQueryPacket (key, val) {
+  const authStatusType = [0x51]
+  const len = [0x0, 0x0, 0x0, key.length + 1 + val.length + 1 + 4]
+  console.log('Len is: ', len)
+  const payKey = new Uint32Array(Buffer.from(key, 'binary'))
+  const payVal = new Uint32Array(Buffer.from(val, 'binary'))
+  const buf = Buffer.from([...authStatusType, ...len, ...payKey, 0x0, ...payVal, 0x0], 'binary')
+
+  // console.log('bin buf is: ', buf)
+
+  return buf
+}
+
 function makeReadyForQuery () {
   const authStatusType = [0x5A]
   const len = [0x0, 0x0, 0x0, 0x5]
@@ -37,6 +71,9 @@ net.createServer(function (socket) {
   socket.on('data', function (chunk) {
     const buf = new Uint32Array(Buffer.from(chunk, 'binary'))
     console.log(buf)
+
+    // On the incoming data from client, node output will print it as decimal,
+    // but the postgres info in wireshark are displayed in hex
 
     // New connection request
     if (0x52 === buf[3]) {
@@ -64,9 +101,11 @@ net.createServer(function (socket) {
       console.log(buf)
       // socket.write(authPacket())
       // socket.write(makeStatusPacket('application_name', 'psql'))
+      socket.write(makeRowDescPacket(['fruit']))
+      socket.write(makeQueryPacket('Hello', 'World'))
       socket.write(makeReadyForQuery())
     }
-    else if (0x88 === buf[0] || 88 === buf[0]) {
+    else if (0x58 === buf[0]) {
       console.log('Client disconnected!')
     }
     else {
