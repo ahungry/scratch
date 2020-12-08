@@ -5,6 +5,13 @@
 const net = require('net')
 const port = 5433
 
+function noSslPacket () {
+  const type = [0x4E] // N - NO
+  const buf = Buffer.from([...type], 'binary')
+
+  return buf
+}
+
 function authPacket () {
   const authReqType = [0x52]
   const length8 = [0x0, 0x0, 0x0, 0x8]
@@ -106,8 +113,8 @@ net.createServer(function (socket) {
     // On the incoming data from client, node output will print it as decimal,
     // but the postgres info in wireshark are displayed in hex
 
-    // New connection request
-    if (0x52 === buf[3]) {
+    // New connection request, or new conn after failed SSL
+    if (0x52 === buf[3] || 0x3A === buf[3]) {
       console.log(`Data received from client: ${chunk.toString()}`)
       console.log(buf)
       socket.write(authPacket())
@@ -173,6 +180,11 @@ net.createServer(function (socket) {
       // socket.write(makeRowPacket(['apple']))
       // socket.write(makeCommandCompletePacket('SELECT 1'))
       // socket.write(makeReadyForQuery())
+    }
+    else if (0x8 === buf[3]) {
+      // Client wants SSL
+      console.log('no SSL for you')
+      socket.write(noSslPacket())
     }
     else {
       console.log('Unknown time!')
