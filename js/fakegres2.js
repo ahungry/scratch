@@ -1,3 +1,7 @@
+// most built with wireshark packet analysis since I can't seem to
+// find useful byte docs for postgres
+// filter in WS: tcp.port in { 5432, 5433 }
+
 const net = require('net')
 const port = 5433
 
