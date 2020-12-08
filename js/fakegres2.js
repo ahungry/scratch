@@ -66,11 +66,10 @@ function makeCommandCompletePacket (data) {
   const packetLength = 0x0D // TODO: Compute this
   const type = [0x43]
   const length = [0x0, 0x0, 0x0, packetLength]
-  const payData = new Uint32Array(Buffer.from(data, 'binary'))
-  payData.push(0x0)
+  let payData = new Uint32Array(Buffer.from(data, 'binary'))
   const buf = Buffer.from([
     ...type, ...length,
-    ...payData,
+    ...payData, 0x0,
   ], 'binary')
 
   return buf
@@ -122,8 +121,8 @@ net.createServer(function (socket) {
       // socket.write(authPacket())
       // socket.write(makeStatusPacket('application_name', 'psql'))
       socket.write(makeRowDescPacket(['fruit']))
-      socket.write(makeRowPacket('Hello', 'World'))
-      socket.write(makeCommandCompletePacket())
+      socket.write(makeRowPacket(['apple']))
+      socket.write(makeCommandCompletePacket('SELECT 1'))
       socket.write(makeReadyForQuery())
     }
     else if (0x58 === buf[0]) {
