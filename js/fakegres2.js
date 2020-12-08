@@ -129,12 +129,16 @@ net.createServer(function (socket) {
       console.log('Client disconnected!')
     }
     else {
+      // The stdin pipe to psql CLI
       console.log('Unknown time!')
       console.log(`Data received from client: ${chunk.toString()}`)
       console.log(buf)
-      // socket.write(authPacket())
-      // socket.write(makeStatusPacket('application_name', 'psql'))
+      socket.write(authPacket())
       socket.write(makeReadyForQuery())
+      socket.write(makeRowDescPacket(['fruit']))
+      socket.write(makeRowPacket(['apple']))
+      socket.write(makeCommandCompletePacket('SELECT 1'))
+      // socket.write(makeReadyForQuery())
     }
   })
 
