@@ -44,17 +44,37 @@ function makeRowDescPacket (rowHeaders) {
   return buf
 }
 
-function makeQueryPacket (key, val) {
-  const authStatusType = [0x51]
-  const len = [0x0, 0x0, 0x0, key.length + 1 + val.length + 1 + 4]
-  console.log('Len is: ', len)
-  const payKey = new Uint32Array(Buffer.from(key, 'binary'))
-  const payVal = new Uint32Array(Buffer.from(val, 'binary'))
-  const buf = Buffer.from([...authStatusType, ...len, ...payKey, 0x0, ...payVal, 0x0], 'binary')
-
-  // console.log('bin buf is: ', buf)
+function makeRowPacket (rows) {
+  const packetLength = 0x0F // TODO: Compute this
+  const fieldCount = rows.length
+  const type = [0x44]
+  const length = [0x0, 0x0, 0x0, packetLength]
+  const fieldCountPacket = [0x0, fieldCount]
+  const payData = new Uint32Array(Buffer.from(rows[0], 'binary'))
+  const buf = Buffer.from([
+    ...type, ...length, ...fieldCountPacket,
+    // Length of the row data
+    0x0, 0x0, 0x0, payData.length,
+    // The actual row data
+    ...payData,
+  ], 'binary')
 
   return buf
+}
+
+function makeCommandCompletePacket (data) {
+  const packetLength = 0x0D // TODO: Compute this
+  const type = [0x43]
+  const length = [0x0, 0x0, 0x0, packetLength]
+  const payData = new Uint32Array(Buffer.from(data, 'binary'))
+  payData.push(0x0)
+  const buf = Buffer.from([
+    ...type, ...length,
+    ...payData,
+  ], 'binary')
+
+  return buf
+
 }
 
 function makeReadyForQuery () {
@@ -102,7 +122,8 @@ net.createServer(function (socket) {
       // socket.write(authPacket())
       // socket.write(makeStatusPacket('application_name', 'psql'))
       socket.write(makeRowDescPacket(['fruit']))
-      socket.write(makeQueryPacket('Hello', 'World'))
+      socket.write(makeRowPacket('Hello', 'World'))
+      socket.write(makeCommandCompletePacket())
       socket.write(makeReadyForQuery())
     }
     else if (0x58 === buf[0]) {
