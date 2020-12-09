@@ -54,23 +54,27 @@ function makeStatusPacket (key, val) {
 
 // After the row desc, it sends the data
 // with 'fruit' as the input, these vals are correct
-function makeRowDescPacket (rowHeaders) {
+function makeRowDescPacket (rows) {
+  const joinedRows = rows.join('\x00')
   const packetLength = 0x1E // TODO: Compute this
-  const fieldCount = rowHeaders.length
+  const fieldCount = rows.length
   const type = [0x54]
-  const length = [0x0, 0x0, 0x0, packetLength]
-  const fieldCountPacket = [0x0, fieldCount]
-  const payData = new Uint32Array(Buffer.from(rowHeaders[0], 'binary'))
+  const length = makeFixedLen(packetLength, 4)
+  const fieldCountPacket = makeFixedLen(fieldCount, 2)
+  const payData = new Uint32Array(Buffer.from(joinedRows, 'binary'))
   // Extra is due to the null ending most likely
-  const payDataSize = rowHeaders[0].length + 1
+  const payDataSize = joinedRows.length + 1
   const buf = Buffer.from([
     ...type, ...length, ...fieldCountPacket,
-    ...payData, 0x0,
-    0x0, 0x0, 0x40, payDataSize,
+    ...payData,
+    // what is x40 here?
+    ...makeFixedLen(0x40, 4),
+    payDataSize,
     0x0, 0x2,
     0x0, 0x0, 0x4, 0x13,
     0xff, 0xff,
-    0x0, 0x0, 0x0, 0x36,
+    // what is x36 here?
+    ...makeFixedLen(0x36, 4),
     0x0, 0x0], 'binary')
 
   return buf
