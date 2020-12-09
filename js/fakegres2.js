@@ -55,30 +55,32 @@ function makeStatusPacket (key, val) {
 // After the row desc, it sends the data
 // with 'fruit' as the input, these vals are correct
 function makeRowDescPacket (rows) {
-  const joinedRows = rows.join('\x00')
+  // 18 bytes of useful info such as oid, column index etc., can we ignore?
+  // it comes after each piece of data in the rows
+  const joinedRows = rows.join(
+    '\x00\x00\x00\x40\x06\x00\x02\x00\x00\x04\x13\xff\xff\x00\x00\x00\x36\x00\x00'
+  ) + '\x00\x00\x00\x40\x06\x00\x02\x00\x00\x04\x13\xff\xff\x00\x00\x00\x36\x00\x00'
   // Is it total size of byte width?
   // 30 = fruit (5) + len (4) + fclen (2) + datalen (4) + ?? (14) + type (1)
-  const packetLength = joinedRows.length + 4 + 2 + 4 + 15
-  // const packetLength = 0x1E // TODO: Compute this - why 30?
+  // 51 = 30 + id (2) +
+
+  console.log('here')
+  const foo = Buffer.from(joinedRows, 'binary')
+  console.log(foo)
+
+  const packetLength = joinedRows.length + 4 + 2
+  console.log('packet len is: ', packetLength)
   const fieldCount = rows.length
   const type = [0x54]
   const length = makeFixedLen(packetLength, 4)
   const fieldCountPacket = makeFixedLen(fieldCount, 2)
-  const payData = new Uint32Array(Buffer.from(joinedRows, 'binary'))
-  // Extra is due to the null ending most likely
-  const payDataSize = joinedRows.length + 1
+  const payData = new Uint8Array(Buffer.from(joinedRows, 'binary'))
   const buf = Buffer.from([
     ...type, ...length, ...fieldCountPacket,
     ...payData,
-    // what is x40 here?
-    ...makeFixedLen(0x40, 4),
-    payDataSize,
-    0x0, 0x2,
-    0x0, 0x0, 0x4, 0x13,
-    0xff, 0xff,
-    // what is x36 here?
-    ...makeFixedLen(0x36, 4),
-    0x0, 0x0], 'binary')
+  ], 'binary')
+
+  console.log(buf)
 
   return buf
 }
