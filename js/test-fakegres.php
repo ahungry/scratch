@@ -8,7 +8,9 @@ var_dump (pg_fetch_row($res));
 
 $pdo = new PDO('pgsql:dbname=mcarter;port=5433;host=localhost;sslmode=disable', 'mcarter');
 
-$stmt = $pdo->prepare('SELECT * FROM basket');
+$stmt = $pdo->prepare('
+-- this is a comment
+SELECT * FROM basket');
 
 echo 'execute';
 $res = $stmt->execute();

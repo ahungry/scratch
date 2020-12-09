@@ -41,3 +41,7 @@ console.log(makeFixedLen(100))
 console.log(makeFixedLen(1000000000))
 
 console.log(unmakeFixedLen(makeFixedLen(1234)))
+
+const arr = makeFixedLen(255)
+const buf = Buffer.from(arr, 'binary')
+console.log(buf.toString() + '\0' + 'hahaha')

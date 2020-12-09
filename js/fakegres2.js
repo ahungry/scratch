@@ -169,6 +169,7 @@ function makeReadyForQuery () {
 net.createServer(function (socket) {
 
   socket.on('data', function (chunk) {
+    console.log(`Data received from client: ${chunk.toString()}`)
     const buf = new Uint32Array(Buffer.from(chunk, 'binary'))
     //console.log(buf)
 
@@ -178,7 +179,6 @@ net.createServer(function (socket) {
     // New connection request, or new conn after failed SSL
     if (0x52 === buf[3] || 0x3A === buf[3]) {
       console.log('Auth request')
-      //console.log(`Data received from client: ${chunk.toString()}`)
       //console.log(buf)
       socket.write(authPacket())
       socket.write(makeStatusPacket('application_name', 'psql'))
