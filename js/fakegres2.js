@@ -5,6 +5,16 @@
 const net = require('net')
 const port = 5433
 
+function makeFixedLen (n, len = 4) {
+  // const packet = Buffer.alloc(4)
+  const xs = new Uint8Array(len)
+  for (let i = 0; i < len; i++) {
+    xs[i] = n >>> (len * 8 - ((i + 1) * 8))
+  }
+
+  return xs
+}
+
 function noSslPacket () {
   const type = [0x4E] // N - NO
   const buf = Buffer.from([...type], 'binary')
@@ -68,17 +78,19 @@ function makeRowDescPacket (rowHeaders) {
 
 // This is with 'apple' as the row input
 function makeRowPacket (rows) {
-  const packetLength = 0x0F // TODO: Compute this
+  // This seems to be the total byte width other than the 'type', as
+  // we test at 15 = apple (5) + len (4) + fclen (2) + datalen (4)
+  const joinedRows = rows.join('\x00')
+  const packetLength = joinedRows.length + 4 + 2 + 4
   const fieldCount = rows.length
   const type = [0x44]
-  const length = [0x0, 0x0, 0x0, packetLength]
-  const fieldCountPacket = [0x0, fieldCount]
-  const joinedRows = rows.join('\x00')
-  const payData = new Uint32Array(Buffer.from(joinedRows, 'binary'))
+  const length = makeFixedLen(packetLength, 4)
+  const fieldCountPacket = makeFixedLen(fieldCount, 2)
+  const payData = new Uint8Array(Buffer.from(joinedRows, 'binary'))
   const buf = Buffer.from([
     ...type, ...length, ...fieldCountPacket,
     // Length of the row data
-    0x0, 0x0, 0x0, payData.length,
+    ...makeFixedLen(payData.length, 4),
     // The actual row data
     ...payData,
   ], 'binary')
