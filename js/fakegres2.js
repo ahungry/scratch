@@ -31,24 +31,20 @@ function authPacket () {
   return buf
 }
 
-// TODO: This should probably just mirror the input user chunk for data
-function makeParsePacket () {
-  const type = [0x50]
-  const len = makeFixedLen(45, 4)
-  const data = 'pdo_stmt_00000001\x00'
-    + 'SELECT * FROM basket\x00'
-  const params = makeFixedLen(0, 2)
+function makeParseCompletePacket () {
+  const type = [0x31]
+  const len = makeFixedLen(4, 4)
 
   const buf = Buffer.from([
     ...type,
     ...len,
-    ...new Uint8Array(Buffer.from(data, 'binary')),
-    ...params,
   ], 'binary')
 
-  console.log('parse payload: ', buf)
-
   return buf
+}
+
+function makeBindCompletePacket () {
+  return Buffer.from([0x32, ...makeFixedLen(4, 4)])
 }
 
 function syncPacket () {
@@ -241,11 +237,11 @@ net.createServer(function (socket) {
       console.log(buf)
 
       // socket.write(authPacket())
-      // socket.write(makeReadyForQuery())
-      socket.write(makeParsePacket())
+      socket.write(makeParseCompletePacket())
+      socket.write(makeReadyForQuery())
 
       // TODO: Maybe add missing Type: Parse portion
-      socket.write(syncPacket())
+      // socket.write(syncPacket())
       // socket.write(makeRowDescPacket(['fruit']))
       // socket.write(makeRowPacket(['apple']))
       // socket.write(makeCommandCompletePacket('SELECT 1'))
@@ -254,6 +250,12 @@ net.createServer(function (socket) {
     else if (0x42 === buf[0]) {
       // PDO Bind
       console.log('Bind call received')
+      socket.write(makeBindCompletePacket())
+      socket.write(makeRowDescPacket(['fruit', 'id']))
+      socket.write(makeRowPacket(['apple', '1']))
+      socket.write(makeRowPacket(['orange', '2']))
+      socket.write(makeCommandCompletePacket('SELECT 1'))
+      socket.write(makeReadyForQuery())
     }
     else if (0x8 === buf[3]) {
       // Client wants SSL
