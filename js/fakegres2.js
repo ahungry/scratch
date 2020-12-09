@@ -52,7 +52,7 @@ function syncPacket () {
   const len = makeFixedLen(4, 4)
   const buf = Buffer.from([...typ, ...len], 'binary')
 
-  console.log('sync payload: ', buf)
+  //console.log('sync payload: ', buf)
 
   return buf
 }
@@ -60,12 +60,12 @@ function syncPacket () {
 function makeStatusPacket (key, val) {
   const authStatusType = [0x53]
   const len = [0x0, 0x0, 0x0, key.length + 1 + val.length + 1 + 4]
-  console.log('Len is: ', len)
+  //console.log('Len is: ', len)
   const payKey = new Uint32Array(Buffer.from(key, 'binary'))
   const payVal = new Uint32Array(Buffer.from(val, 'binary'))
   const buf = Buffer.from([...authStatusType, ...len, ...payKey, 0x0, ...payVal, 0x0], 'binary')
 
-  // console.log('bin buf is: ', buf)
+  //  //console.log('bin buf is: ', buf)
 
   return buf
 }
@@ -90,12 +90,12 @@ function makeRowDescPacket (rows) {
   // 30 = fruit (5) + len (4) + fclen (2) + datalen (4) + ?? (14) + type (1)
   // 51 = 30 + id (2) +
 
-  console.log('here')
+  //console.log('here')
   const foo = Buffer.from(joinedRows, 'binary')
-  console.log(foo)
+  //console.log(foo)
 
   const packetLength = joinedRows.length + 4 + 2
-  console.log('packet len is: ', packetLength)
+  //console.log('packet len is: ', packetLength)
   const fieldCount = rows.length
   const type = [0x54]
   const length = makeFixedLen(packetLength, 4)
@@ -106,7 +106,7 @@ function makeRowDescPacket (rows) {
     ...payData,
   ], 'binary')
 
-  console.log(buf)
+  //console.log(buf)
 
   return buf
 }
@@ -127,7 +127,7 @@ function makeRowPacket (rows) {
     data = new Uint8Array([...data, ...Buffer.from(rows[i], 'binary')])
   }
 
-  console.log('Payload data is: ', data)
+  //console.log('Payload data is: ', data)
 
   const packetLength = data.length + 4 + 2
   const fieldCount = rows.length
@@ -170,15 +170,16 @@ net.createServer(function (socket) {
 
   socket.on('data', function (chunk) {
     const buf = new Uint32Array(Buffer.from(chunk, 'binary'))
-    console.log(buf)
+    //console.log(buf)
 
     // On the incoming data from client, node output will print it as decimal,
     // but the postgres info in wireshark are displayed in hex
 
     // New connection request, or new conn after failed SSL
     if (0x52 === buf[3] || 0x3A === buf[3]) {
-      console.log(`Data received from client: ${chunk.toString()}`)
-      console.log(buf)
+      console.log('Auth request')
+      //console.log(`Data received from client: ${chunk.toString()}`)
+      //console.log(buf)
       socket.write(authPacket())
       socket.write(makeStatusPacket('application_name', 'psql'))
       socket.write(makeStatusPacket('client_encoding', 'UTF8'))
@@ -197,8 +198,8 @@ net.createServer(function (socket) {
     // Query request
     else if (0x51 === buf[0]) {
       console.log('Query time!')
-      console.log(`Data received from client: ${chunk.toString()}`)
-      console.log(buf)
+      //console.log(`Data received from client: ${chunk.toString()}`)
+      //console.log(buf)
       // socket.write(authPacket())
       // socket.write(makeStatusPacket('application_name', 'psql'))
       socket.write(makeRowDescPacket(['fruit', 'id']))
@@ -220,8 +221,8 @@ net.createServer(function (socket) {
     else if (0x3D === buf[3]) {
       // The stdin pipe to psql CLI
       console.log('Pipe time!')
-      console.log(`Data received from client: ${chunk.toString()}`)
-      console.log(buf)
+      //console.log(`Data received from client: ${chunk.toString()}`)
+      //console.log(buf)
       socket.write(authPacket())
       socket.write(makeReadyForQuery())
       socket.write(makeRowDescPacket(['fruit']))
@@ -233,8 +234,8 @@ net.createServer(function (socket) {
       // PARSE
       // A PDO statement begins here
       console.log('Parse call received!')
-      console.log(`Data received from client: ${chunk.toString()}`)
-      console.log(buf)
+      //console.log(`Data received from client: ${chunk.toString()}`)
+      //console.log(buf)
 
       // socket.write(authPacket())
       socket.write(makeParseCompletePacket())
@@ -270,8 +271,8 @@ net.createServer(function (socket) {
     }
     else {
       console.log('Unknown time!')
-      console.log(`Data received from client: ${chunk.toString()}`)
-      console.log(buf)
+      //console.log(`Data received from client: ${chunk.toString()}`)
+      //console.log(buf)
       socket.write(authPacket())
       socket.write(makeReadyForQuery())
       socket.write(makeRowDescPacket(['fruit']))
