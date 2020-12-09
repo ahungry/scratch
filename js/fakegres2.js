@@ -55,11 +55,19 @@ function makeStatusPacket (key, val) {
 // After the row desc, it sends the data
 // with 'fruit' as the input, these vals are correct
 function makeRowDescPacket (rows) {
+  // type modifier is a 4 byte wide
+  // 36 (54) is text
+  // while -1 (0xFFFFFFFF) is int
+  const textType = '\x00\x00\x00\x36'
+  const intType = '\xFF\xFF\xFF\xFF'
+
   // 18 bytes of useful info such as oid, column index etc., can we ignore?
   // it comes after each piece of data in the rows
+
+  // Format is: name + null (1) + oid (4) + col idx (2) + oid (4) + colLen (2) + type (4) + fmt (2)
   const joinedRows = rows.join(
-    '\x00\x00\x00\x40\x06\x00\x02\x00\x00\x04\x13\xff\xff\x00\x00\x00\x36\x00\x00'
-  ) + '\x00\x00\x00\x40\x06\x00\x02\x00\x00\x04\x13\xff\xff\x00\x00\x00\x36\x00\x00'
+    `\x00\x00\x00\x40\x06\x00\x02\x00\x00\x04\x13\xff\xff${intType}\x00\x00`
+  ) + `\x00\x00\x00\x40\x06\x00\x02\x00\x00\x04\x13\xff\xff${textType}\x00\x00`
   // Is it total size of byte width?
   // 30 = fruit (5) + len (4) + fclen (2) + datalen (4) + ?? (14) + type (1)
   // 51 = 30 + id (2) +
@@ -177,6 +185,7 @@ net.createServer(function (socket) {
       // socket.write(makeStatusPacket('application_name', 'psql'))
       socket.write(makeRowDescPacket(['fruit', 'id']))
       socket.write(makeRowPacket(['apple', '1']))
+      socket.write(makeRowPacket(['orange', '2']))
       socket.write(makeCommandCompletePacket('SELECT 1'))
       socket.write(makeReadyForQuery())
     }
