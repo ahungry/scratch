@@ -35,22 +35,28 @@ function authPacket () {
 function makeParsePacket () {
   const type = [0x50]
   const len = makeFixedLen(45, 4)
-  const data = 'pdo_stmt_00000001\0x00'
-    + 'SELECT * FROM basket\0x00'
+  const data = 'pdo_stmt_00000001\x00'
+    + 'SELECT * FROM basket\x00'
   const params = makeFixedLen(0, 2)
 
-  return Buffer.from([
+  const buf = Buffer.from([
     ...type,
     ...len,
     ...new Uint8Array(Buffer.from(data, 'binary')),
     ...params,
-  ])
+  ], 'binary')
+
+  console.log('parse payload: ', buf)
+
+  return buf
 }
 
 function syncPacket () {
   const typ = [0x53]
-  const len = [0x0, 0x0, 0x0, 0x4]
+  const len = makeFixedLen(4, 4)
   const buf = Buffer.from([...typ, ...len], 'binary')
+
+  console.log('sync payload: ', buf)
 
   return buf
 }

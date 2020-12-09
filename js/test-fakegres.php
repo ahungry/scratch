@@ -10,9 +10,11 @@ $pdo = new PDO('pgsql:dbname=mcarter;port=5433;host=localhost;sslmode=disable', 
 
 $stmt = $pdo->prepare('SELECT * FROM basket');
 
+echo 'execute';
 $res = $stmt->execute();
+echo 'fetch';
 var_dump($res);
-// $row = $stmt->fetch();
+$row = $stmt->fetch();
 // $rows = $stmt->fetchAll();
-// var_dump ($row);
+var_dump ($row);
 // var_dump ($rows); die;
