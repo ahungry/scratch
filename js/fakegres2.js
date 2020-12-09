@@ -89,19 +89,29 @@ function makeRowDescPacket (rows) {
 function makeRowPacket (rows) {
   // This seems to be the total byte width other than the 'type', as
   // we test at 15 = apple (5) + len (4) + fclen (2) + datalen (4)
-  const joinedRows = rows.join('\x00')
-  const packetLength = joinedRows.length + 4 + 2 + 4
+  // const joinedRows = rows.join('\x00')
+
+  // After headers, each row first sends its length in bytes, then the actual payload
+  // The length is a 4 width
+  let data = new Uint8Array()
+
+  // FIXME: Probably real inefficient, why can't we append to the array?
+  for (let i = 0; i < rows.length; i++) {
+    data = new Uint8Array([...data, ...makeFixedLen(rows[i].length, 4)])
+    data = new Uint8Array([...data, ...Buffer.from(rows[i], 'binary')])
+  }
+
+  console.log('Payload data is: ', data)
+
+  const packetLength = data.length + 4 + 2
   const fieldCount = rows.length
   const type = [0x44]
   const length = makeFixedLen(packetLength, 4)
   const fieldCountPacket = makeFixedLen(fieldCount, 2)
-  const payData = new Uint8Array(Buffer.from(joinedRows, 'binary'))
+  // const payData = new Uint8Array(Buffer.from(joinedRows, 'binary'))
   const buf = Buffer.from([
     ...type, ...length, ...fieldCountPacket,
-    // Length of the row data
-    ...makeFixedLen(payData.length, 4),
-    // The actual row data
-    ...payData,
+    ...data,
   ], 'binary')
 
   return buf
@@ -165,8 +175,8 @@ net.createServer(function (socket) {
       console.log(buf)
       // socket.write(authPacket())
       // socket.write(makeStatusPacket('application_name', 'psql'))
-      socket.write(makeRowDescPacket(['fruit']))
-      socket.write(makeRowPacket(['apple']))
+      socket.write(makeRowDescPacket(['fruit', 'id']))
+      socket.write(makeRowPacket(['apple', '1']))
       socket.write(makeCommandCompletePacket('SELECT 1'))
       socket.write(makeReadyForQuery())
     }
