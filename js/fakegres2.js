@@ -238,6 +238,10 @@ net.createServer(function (socket) {
 
       // socket.write(authPacket())
       socket.write(makeParseCompletePacket())
+      socket.write(makeRowDescPacket(['fruit', 'id']))
+      socket.write(makeRowPacket(['apple', '1']))
+      socket.write(makeRowPacket(['orange', '2']))
+      socket.write(makeCommandCompletePacket('SELECT 1'))
       socket.write(makeReadyForQuery())
 
       // TODO: Maybe add missing Type: Parse portion
