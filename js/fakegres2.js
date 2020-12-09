@@ -169,6 +169,9 @@ function makeReadyForQuery () {
 net.createServer(function (socket) {
 
   socket.on('data', function (chunk) {
+    // TODO: Add a scanner on incoming data
+    // We can then either memoize / replay responses from a real back end, or we can
+    // simply use sentinel values to swap between our responses
     console.log(`Data received from client: ${chunk.toString()}`)
     const buf = new Uint32Array(Buffer.from(chunk, 'binary'))
     //console.log(buf)
