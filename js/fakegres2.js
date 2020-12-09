@@ -56,7 +56,10 @@ function makeStatusPacket (key, val) {
 // with 'fruit' as the input, these vals are correct
 function makeRowDescPacket (rows) {
   const joinedRows = rows.join('\x00')
-  const packetLength = 0x1E // TODO: Compute this
+  // Is it total size of byte width?
+  // 30 = fruit (5) + len (4) + fclen (2) + datalen (4) + ?? (14) + type (1)
+  const packetLength = joinedRows.length + 4 + 2 + 4 + 15
+  // const packetLength = 0x1E // TODO: Compute this - why 30?
   const fieldCount = rows.length
   const type = [0x54]
   const length = makeFixedLen(packetLength, 4)
