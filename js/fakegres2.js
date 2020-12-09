@@ -31,6 +31,22 @@ function authPacket () {
   return buf
 }
 
+// TODO: This should probably just mirror the input user chunk for data
+function makeParsePacket () {
+  const type = [0x50]
+  const len = makeFixedLen(45, 4)
+  const data = 'pdo_stmt_00000001\0x00'
+    + 'SELECT * FROM basket\0x00'
+  const params = makeFixedLen(0, 2)
+
+  return Buffer.from([
+    ...type,
+    ...len,
+    ...new Uint8Array(Buffer.from(data, 'binary')),
+    ...params,
+  ])
+}
+
 function syncPacket () {
   const typ = [0x53]
   const len = [0x0, 0x0, 0x0, 0x4]
@@ -212,19 +228,26 @@ net.createServer(function (socket) {
       // socket.write(makeReadyForQuery())
     }
     else if (0x50 === buf[0]) {
-      // TODO: Get working
-      // A PDO statement
-      console.log('PDO prepared query time!')
+      // PARSE
+      // A PDO statement begins here
+      console.log('Parse call received!')
       console.log(`Data received from client: ${chunk.toString()}`)
       console.log(buf)
-      socket.write(authPacket())
-      socket.write(makeReadyForQuery())
+
+      // socket.write(authPacket())
+      // socket.write(makeReadyForQuery())
+      socket.write(makeParsePacket())
+
       // TODO: Maybe add missing Type: Parse portion
       socket.write(syncPacket())
       // socket.write(makeRowDescPacket(['fruit']))
       // socket.write(makeRowPacket(['apple']))
       // socket.write(makeCommandCompletePacket('SELECT 1'))
       // socket.write(makeReadyForQuery())
+    }
+    else if (0x42 === buf[0]) {
+      // PDO Bind
+      console.log('Bind call received')
     }
     else if (0x8 === buf[3]) {
       // Client wants SSL
