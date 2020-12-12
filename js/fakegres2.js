@@ -2,6 +2,9 @@
 // find useful byte docs for postgres
 // filter in WS: tcp.port in { 5432, 5433 }
 
+// Find more type info:
+// select oid,typname from pg_type;
+
 const net = require('net')
 const port = 5433
 
@@ -111,7 +114,7 @@ function makeRowDescPacket (rows, types) {
 
   const typeOIDs = {
     bool: '\x00\x00\x00\x10',
-    float: '\x00\x00\x06\xA4', // 1700
+    float: '\x00\x00\x06\xA4', // 1700 (actually NUMERIC)
     int: '\x00\x00\x00\x17', // 23a
     text: '\x00\x00\x04\x13',
   }
