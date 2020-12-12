@@ -6,13 +6,13 @@
 
 // var_dump (pg_fetch_row($res));
 
-$pdo = new PDO('pgsql:dbname=mcarter;port=5432;host=localhost;sslmode=disable', 'mcarter');
+$pdo = new PDO('pgsql:dbname=mcarter;port=5433;host=localhost;sslmode=disable', 'mcarter');
 
 // $stmt = $pdo->prepare('
 // -- this is a comment
 // SELECT * FROM basket');
 
-$stmt = $pdo->prepare('select 1.5 as foo');
+$stmt = $pdo->prepare('select true as foo');
 
 $res = $stmt->execute();
 // var_dump($res);
