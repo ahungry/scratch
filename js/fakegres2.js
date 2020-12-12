@@ -151,8 +151,8 @@ function makeRowPacket (rows) {
 
   // FIXME: Probably real inefficient, why can't we append to the array?
   for (let i = 0; i < rows.length; i++) {
-    data = new Uint8Array([...data, ...makeFixedLen(rows[i].length, 4)])
-    data = new Uint8Array([...data, ...Buffer.from(rows[i], 'binary')])
+    data = new Uint8Array([...data, ...makeFixedLen(String(rows[i]).length, 4)])
+    data = new Uint8Array([...data, ...Buffer.from(String(rows[i]), 'binary')])
   }
 
   //console.log('Payload data is: ', data)
@@ -192,6 +192,12 @@ function makeReadyForQuery () {
   const buf = Buffer.from([...authStatusType, ...len, ...payload], 'binary')
 
   return buf
+}
+
+function doSocketRowSend (socket) {
+  socket.write(makeRowDescPacket(['fruit', 'id', 'flavor', 'rating']))
+  socket.write(makeRowPacket(['apple', '1', 'tart', 20.20]))
+  socket.write(makeRowPacket(['orange', '2', 'citrusy', 80.35]))
 }
 
 net.createServer(function (socket) {
@@ -237,9 +243,7 @@ net.createServer(function (socket) {
       //console.log(buf)
       // socket.write(authPacket())
       // socket.write(makeStatusPacket('application_name', 'psql'))
-      socket.write(makeRowDescPacket(['fruit', 'id']))
-      socket.write(makeRowPacket(['apple', '1']))
-      socket.write(makeRowPacket(['orange', '2']))
+      doSocketRowSend(socket)
       socket.write(makeCommandCompletePacket('SELECT 1'))
       socket.write(makeReadyForQuery())
     }
@@ -260,8 +264,7 @@ net.createServer(function (socket) {
       //console.log(buf)
       socket.write(authPacket())
       socket.write(makeReadyForQuery())
-      socket.write(makeRowDescPacket(['fruit']))
-      socket.write(makeRowPacket(['apple']))
+      doSocketRowSend(socket)
       socket.write(makeCommandCompletePacket('SELECT 1'))
       // socket.write(makeReadyForQuery())
     }
@@ -281,9 +284,7 @@ net.createServer(function (socket) {
 
       // socket.write(authPacket())
       socket.write(makeParseCompletePacket())
-      socket.write(makeRowDescPacket(['fruit', 'id']))
-      socket.write(makeRowPacket(['apple', '1']))
-      socket.write(makeRowPacket(['orange', '2']))
+      doSocketRowSend(socket)
       socket.write(makeCommandCompletePacket('SELECT 1'))
       socket.write(makeReadyForQuery())
 
@@ -298,9 +299,7 @@ net.createServer(function (socket) {
       // PDO Bind
       console.log('Bind call received')
       socket.write(makeBindCompletePacket())
-      socket.write(makeRowDescPacket(['fruit', 'id']))
-      socket.write(makeRowPacket(['apple', '1']))
-      socket.write(makeRowPacket(['orange', '2']))
+      doSocketRowSend(socket)
       socket.write(makeCommandCompletePacket('SELECT 1'))
       socket.write(makeReadyForQuery())
     }
@@ -317,8 +316,7 @@ net.createServer(function (socket) {
       //console.log(buf)
       socket.write(authPacket())
       socket.write(makeReadyForQuery())
-      socket.write(makeRowDescPacket(['fruit']))
-      socket.write(makeRowPacket(['apple']))
+      doSocketRowSend(socket)
       socket.write(makeCommandCompletePacket('SELECT 1'))
       socket.write(syncPacket())
       // socket.write(makeReadyForQuery())
