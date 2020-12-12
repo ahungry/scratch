@@ -104,16 +104,32 @@ function makeRowDescPacket (rows) {
   // type modifier is a 4 byte wide
   // 36 (54) is text
   // while -1 (0xFFFFFFFF) is int
+
+  // These are type modifiers - -1 (F) seems most common
   const textType = '\x00\x00\x00\x36'
   const intType = '\xFF\xFF\xFF\xFF'
+
+  const typeOIDs = {
+    boolean: '\x00\x00\x00\x10',
+    float: '\x00\x00\x06\xA4', // 1700
+    integer: '\x00\x00\x00\x17', // 23a
+    number: '\x00\x00\x00\x17', // 23a
+    string: '\x00\x00\x04\x13',
+  }
 
   // 18 bytes of useful info such as oid, column index etc., can we ignore?
   // it comes after each piece of data in the rows
 
   // Format is: name + null (1) + oid (4) + col idx (2) + oid (4) + colLen (2) + type (4) + fmt (2)
-  const joinedRows = rows.join(
-    `\x00\x00\x00\x40\x06\x00\x02\x00\x00\x04\x13\xff\xff${intType}\x00\x00`
-  ) + `\x00\x00\x00\x40\x06\x00\x02\x00\x00\x04\x13\xff\xff${textType}\x00\x00`
+  let joinedRows = ''
+
+  for (let i = 0; i < rows.length; i++) {
+    const typeOID = typeOIDs[typeof rows[i]]
+    joinedRows += rows[i] + `\x00\x00\x00\x40\x06\x00\x02${typeOID}\xff\xff${intType}\x00\x00`
+  }
+  // const joinedRows = rows.join(
+  //   `\x00\x00\x00\x40\x06\x00\x02\x00\x00\x04\x13\xff\xff${intType}\x00\x00`
+  // ) + `\x00\x00\x00\x40\x06\x00\x02\x00\x00\x00\x10\xff\xff${textType}\x00\x00`
   // Is it total size of byte width?
   // 30 = fruit (5) + len (4) + fclen (2) + datalen (4) + ?? (14) + type (1)
   // 51 = 30 + id (2) +
@@ -151,8 +167,14 @@ function makeRowPacket (rows) {
 
   // FIXME: Probably real inefficient, why can't we append to the array?
   for (let i = 0; i < rows.length; i++) {
-    data = new Uint8Array([...data, ...makeFixedLen(String(rows[i]).length, 4)])
-    data = new Uint8Array([...data, ...Buffer.from(String(rows[i]), 'binary')])
+    if (typeof rows[i] === 'string') {
+      data = new Uint8Array([...data, ...makeFixedLen(rows[i].length, 4)])
+      data = new Uint8Array([...data, ...Buffer.from(rows[i], 'binary')])
+    } else {
+      // int/float/bools
+      data = new Uint8Array([...data, ...makeFixedLen(1, 4)]) // FIXME: Compute if wider than a byte
+      data = new Uint8Array([...data, rows[i]])
+    }
   }
 
   //console.log('Payload data is: ', data)
@@ -194,10 +216,11 @@ function makeReadyForQuery () {
   return buf
 }
 
+// TODO: Actually handle non-text output types like int, float, boolean
 function doSocketRowSend (socket) {
-  socket.write(makeRowDescPacket(['fruit', 'id', 'flavor', 'rating']))
-  socket.write(makeRowPacket(['apple', '1', 'tart', 20.20]))
-  socket.write(makeRowPacket(['orange', '2', 'citrusy', 80.35]))
+  socket.write(makeRowDescPacket(['fruit', 'id', 'flavor', 'rating', 'would_recommend']))
+  socket.write(makeRowPacket(['apple', '1', 'tart', '20.20', 0x66])) // false
+  socket.write(makeRowPacket(['orange', '2', 'citrusy', '80.35', 0x74])) // true
 }
 
 net.createServer(function (socket) {
