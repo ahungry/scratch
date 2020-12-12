@@ -110,21 +110,21 @@ function makeRowDescPacket (rows) {
   const intType = '\xFF\xFF\xFF\xFF'
 
   const typeOIDs = {
-    boolean: '\x00\x00\x00\x10',
+    bool: '\x00\x00\x00\x10',
     float: '\x00\x00\x06\xA4', // 1700
-    integer: '\x00\x00\x00\x17', // 23a
-    number: '\x00\x00\x00\x17', // 23a
-    string: '\x00\x00\x04\x13',
+    int: '\x00\x00\x00\x17', // 23a
+    text: '\x00\x00\x04\x13',
   }
 
   // 18 bytes of useful info such as oid, column index etc., can we ignore?
   // it comes after each piece of data in the rows
 
   // Format is: name + null (1) + oid (4) + col idx (2) + oid (4) + colLen (2) + type (4) + fmt (2)
+  const types = ['text', 'int', 'text', 'int', 'bool']
   let joinedRows = ''
 
   for (let i = 0; i < rows.length; i++) {
-    const typeOID = typeOIDs[typeof rows[i]]
+    const typeOID = typeOIDs[types[i]]
     joinedRows += rows[i] + `\x00\x00\x00\x40\x06\x00\x02${typeOID}\xff\xff${intType}\x00\x00`
   }
   // const joinedRows = rows.join(
@@ -167,13 +167,19 @@ function makeRowPacket (rows) {
 
   // FIXME: Probably real inefficient, why can't we append to the array?
   for (let i = 0; i < rows.length; i++) {
+    console.log('types are: ', typeof rows[i])
+
     if (typeof rows[i] === 'string') {
       data = new Uint8Array([...data, ...makeFixedLen(rows[i].length, 4)])
       data = new Uint8Array([...data, ...Buffer.from(rows[i], 'binary')])
+    } else if (typeof rows[i] === 'number') {
+      data = new Uint8Array([...data, ...makeFixedLen(String(rows[i]).length, 4)])
+      data = new Uint8Array([...data, ...Buffer.from(String(rows[i]), 'binary')])
     } else {
-      // int/float/bools
+      let hex = rows[i] === true ? 0x74 : 0x66
+      // booleans have literal t/f values on the way out
       data = new Uint8Array([...data, ...makeFixedLen(1, 4)]) // FIXME: Compute if wider than a byte
-      data = new Uint8Array([...data, rows[i]])
+      data = new Uint8Array([...data, hex])
     }
   }
 
@@ -219,8 +225,8 @@ function makeReadyForQuery () {
 // TODO: Actually handle non-text output types like int, float, boolean
 function doSocketRowSend (socket) {
   socket.write(makeRowDescPacket(['fruit', 'id', 'flavor', 'rating', 'would_recommend']))
-  socket.write(makeRowPacket(['apple', '1', 'tart', '20.20', 0x66])) // false
-  socket.write(makeRowPacket(['orange', '2', 'citrusy', '80.35', 0x74])) // true
+  socket.write(makeRowPacket(['apple', 1, 'tart', 20.20, false])) // false
+  socket.write(makeRowPacket(['orange', 2, 'citrusy', 80.35, true])) // true
 }
 
 net.createServer(function (socket) {
