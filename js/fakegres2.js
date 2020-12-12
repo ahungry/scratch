@@ -100,13 +100,13 @@ function makeStatusPacket (key, val) {
 
 // After the row desc, it sends the data
 // with 'fruit' as the input, these vals are correct
-function makeRowDescPacket (rows) {
+function makeRowDescPacket (rows, types) {
   // type modifier is a 4 byte wide
   // 36 (54) is text
   // while -1 (0xFFFFFFFF) is int
 
   // These are type modifiers - -1 (F) seems most common
-  const textType = '\x00\x00\x00\x36'
+  // const textType = '\x00\x00\x00\x36'
   const intType = '\xFF\xFF\xFF\xFF'
 
   const typeOIDs = {
@@ -120,7 +120,6 @@ function makeRowDescPacket (rows) {
   // it comes after each piece of data in the rows
 
   // Format is: name + null (1) + oid (4) + col idx (2) + oid (4) + colLen (2) + type (4) + fmt (2)
-  const types = ['text', 'int', 'text', 'int', 'bool']
   let joinedRows = ''
 
   for (let i = 0; i < rows.length; i++) {
@@ -224,7 +223,10 @@ function makeReadyForQuery () {
 
 // TODO: Actually handle non-text output types like int, float, boolean
 function doSocketRowSend (socket) {
-  socket.write(makeRowDescPacket(['fruit', 'id', 'flavor', 'rating', 'would_recommend']))
+  socket.write(makeRowDescPacket(
+    ['fruit', 'id', 'flavor', 'rating', 'would_recommend'],
+    ['text', 'int', 'text', 'float', 'bool'],
+  ))
   socket.write(makeRowPacket(['apple', 1, 'tart', 20.20, false])) // false
   socket.write(makeRowPacket(['orange', 2, 'citrusy', 80.35, true])) // true
 }
