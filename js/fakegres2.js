@@ -15,6 +15,34 @@ function makeFixedLen (n, len = 4) {
   return xs
 }
 
+function unmakeFixedLen (xs) {
+  let n = 0
+
+  for (let i = 0; i < xs.length; i++) {
+    n += xs[i] << (xs.length * 8 - ((i + 1) * 8))
+  }
+
+  return n
+}
+
+// Given a Uint8Array of bytes, return the query
+function bytesToStringArr (uint8_arr) {
+  const len = unmakeFixedLen(uint8_arr.slice(1, 5))
+  const txt = uint8_arr.slice(5, 5 + len)
+
+  return Buffer.from(txt, 'binary').toString('ascii').split('\x00')
+}
+
+// Given a Uint8Array of bytes, return the query for a P/S (0x50)
+function getQueryFromPs (uint8_arr) {
+  return bytesToStringArr(uint8_arr)[1]
+}
+
+// Given a Uint8Array of bytes, return the query for a Q (0x51)
+function getQueryFromQ (uint8_arr) {
+  return bytesToStringArr(uint8_arr)[0]
+}
+
 function noSslPacket () {
   const type = [0x4E] // N - NO
   const buf = Buffer.from([...type], 'binary')
@@ -174,7 +202,7 @@ net.createServer(function (socket) {
     // simply use sentinel values to swap between our responses
     console.log(`Data received from client: ${chunk.toString()}`)
     const buf = new Uint32Array(Buffer.from(chunk, 'binary'))
-    //console.log(buf)
+    // console.log(buf)
 
     // On the incoming data from client, node output will print it as decimal,
     // but the postgres info in wireshark are displayed in hex
@@ -200,7 +228,11 @@ net.createServer(function (socket) {
     }
     // Query request
     else if (0x51 === buf[0]) {
+      // Inbound query request, format is
+      // 0x51 (1) len (4) - if length is 41, 37 bytes follow - 36 bytes of query, 1 null terminator
+      // 'select id,fruit from basket limit 2;'
       console.log('Query time!')
+      console.log(getQueryFromQ(buf))
       //console.log(`Data received from client: ${chunk.toString()}`)
       //console.log(buf)
       // socket.write(authPacket())
@@ -234,11 +266,18 @@ net.createServer(function (socket) {
       // socket.write(makeReadyForQuery())
     }
     else if (0x50 === buf[0]) {
+      // Inbound P/S request, format is
+      // 0x50 (1) len (4) - if length is 67, 63 bytes follow
+      // The format is <statement>0<query>0<params size in 2 bytes)
+      // So we would want to parse by reading all bytes up to len, then
+      // break into a tuple/3
+      // 'select id,fruit from basket limit 2;'
+
       // PARSE
       // A PDO statement begins here
       console.log('Parse call received!')
       //console.log(`Data received from client: ${chunk.toString()}`)
-      //console.log(buf)
+      console.log(getQueryFromPs(buf))
 
       // socket.write(authPacket())
       socket.write(makeParseCompletePacket())
