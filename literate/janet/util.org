@@ -1,5 +1,6 @@
 * str
 This is a similar interface to Clojure str.
+https://clojuredocs.org/clojure.core/str
 
 #+begin_src janet :tangle yes
 (defn str
@@ -10,6 +11,7 @@ This is a similar interface to Clojure str.
 
 * conj
 Another similar interface to Clojure's - used to join things together.
+https://clojuredocs.org/clojure.core/conj
 
 #+begin_src janet :tangle yes
 (defn concat
