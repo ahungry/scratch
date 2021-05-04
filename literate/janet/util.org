@@ -1,0 +1,20 @@
+* str
+This is a similar interface to Clojure str.
+
+#+begin_src janet :tangle yes
+(defn str
+  "Join r.. strings into one."
+  [& r]
+  (string/join r))
+#+end_src
+
+* conj
+Another similar interface to Clojure's - used to join things together.
+
+#+begin_src janet :tangle yes
+(defn concat
+  "Clojure like concat."
+  [& r]
+  (->> (reduce array/concat @[] r)
+       (apply tuple)))
+#+end_src

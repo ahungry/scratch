@@ -4,6 +4,7 @@ class Hello {
   protected $firstName;
   protected $lastName;
   protected $age;
+  protected $occupation;
 
 public function __construct (
   $firstName = 'Matthew',

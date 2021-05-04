@@ -8,6 +8,7 @@ class Hello {
   protected $firstName;
   protected $lastName;
   protected $age;
+  protected $occupation;
 
 #+END_SRC
 

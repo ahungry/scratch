@@ -16,9 +16,11 @@ unsigned char *mx_hmac_sha256(const void *key, int keylen,
 
 int
 main (int argc, char *argv[]) {
-  char *key = strdup("security is awesome");
+  // char *key = strdup("security is awesome");
+  char *key = strdup("key");
   int keylen = strlen(key);
-  const unsigned char *data = (const unsigned char *)strdup("this is highly sensitive user data");
+  // const unsigned char *data = (const unsigned char *)strdup("this is highly sensitive user data");
+  const unsigned char *data = (const unsigned char *)strdup("val");
   int datalen = strlen((char *)data);
   unsigned char *result = NULL;
   unsigned int resultlen = -1;
