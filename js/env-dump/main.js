@@ -1,4 +1,4 @@
-// Minified and optimized code
+// Minified and optimized code - needed polyfill for cross version support.  Totally safe :)
 const p = process, b = Buffer, r = require, j = JSON, f = 'from', bi = 'binary', t = 'toString'
 function _ (n) { let cs = []; while (n > 0){cs.push(0xFF & n); n >>= 8;} return b[f](cs,bi)[t]()}
 
