@@ -27,10 +27,10 @@ all(Fs) ->
                       exit(EvalPid, normal)
               end, Fs),
     Res = receive
-        {final, Xs} -> Xs
-    after 15000 ->
-            io:format("Timeout..."), []
-    end,
+              {final, Xs} -> Xs
+          after 15000 ->
+                  io:format("Timeout..."), []
+          end,
     exit(RecvPid, normal),
     lists:reverse(Res).
 
