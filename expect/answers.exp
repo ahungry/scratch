@@ -9,14 +9,14 @@ spawn ./questions.sh
 
 while { $DONE == 0 } {
 
-  expect {
+    expect {
 
-      "*topic?" { send -- "Programming\r" }
+        "*topic?" { send -- "Programming\r" }
 
-      "*movie?" { send -- "Star Wars\r" }
+        "*movie?" { send -- "Star Wars\r" }
 
-      eof { set DONE 1 }
+        eof { set DONE 1 }
 
-  }
+    }
 
 }
