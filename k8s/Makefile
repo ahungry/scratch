@@ -1,3 +1,8 @@
+# Step 1: make build
+# Step 2: make start
+# Step 3: make up
+# Step 4: make forward
+
 build:
 	eval $$(minikube docker-env); docker build -t my-image .
 
@@ -16,6 +21,9 @@ kube-start:
 kube-stop:
 	minikube stop
 
+# This is a sample that manually creates a single pod
+# via the CLI instead of yaml, it likely won't serve any requests or be of any use.
+# as it is not defining port forwarding like the deployment.yaml is
 kube-up: build
 	kubectl run --generator=run-pod/v1 my-image \
 	--image=my-image:latest \
