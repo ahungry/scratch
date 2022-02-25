@@ -1,5 +1,5 @@
 build:
-	eval $(minikube docker-env); docker build -t my-image .
+	eval $$(minikube docker-env); docker build -t my-image .
 
 up: kube-deployment
 down: kube-down
@@ -10,7 +10,7 @@ kube-start:
 	minikube start --vm-driver=kvm2 \
 	--insecure-registry localhost:5000 \
 	--memory 2048M \
-	--disk-size 2G
+	--disk-size 3G
 	minikube dashboard
 
 kube-stop:
