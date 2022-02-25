@@ -1,0 +1,17 @@
+# -*- mode: k8s -*-
+
+# https://kubernetes.io/docs/concepts/services-networking/service/
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: blub-app
+  ports:
+    - protocol: TCP
+      port: 12345
+      targetPort: 8080
