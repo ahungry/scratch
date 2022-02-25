@@ -1,7 +1,12 @@
-# Step 1: make build
-# Step 2: make start
-# Step 3: make up
-# Step 4: make forward
+# https://kubernetes.io/docs/tutorials/hello-minikube/
+
+# Step 1: make build    (create the properly tagged docker image)
+# Step 2: make start    (boot up minikube env)
+# Step 3: make up       (deployment creation, made up of a pod (replicas settings), of containers)
+# Step 4: make forward  (non-load balanced way to hit a single container in pod)
+# Step 5: make expose   (load balanced way to make a deployment accessible on the external net)
+# Step 5: make service  (minikube way to get a callable local IP pointed to the expose)
+
 
 build:
 	eval $$(minikube docker-env); docker build -t my-image .
@@ -31,14 +36,18 @@ kube-up: build
 	kubectl get pods
 
 kube-down:
-	kubectl delete service blub
+	-kubectl delete service blub
 	kubectl delete pods --all
 	kubectl delete deployments --all
 
 kube-deployment:
 	kubectl create -f deployment.yaml
 	kubectl get deployments
-	#kubectl expose deployment blub --type=LoadBalancer --port=8080
+
+expose:
+	kubectl expose deployment blub --type=LoadBalancer --port=8080
+
+service:
 	minikube service blub
 
 kube-apply:
