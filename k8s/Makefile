@@ -14,6 +14,7 @@
 
 build:
 	eval $$(minikube docker-env); docker build -t my-image .
+	eval $$(minikube docker-env); docker build -f Dockerfile_secondary -t my-secondary .
 
 up: kube-deployment
 down: kube-down
@@ -46,7 +47,9 @@ kube-down:
 
 kube-deployment:
 	kubectl create -f deployment.yaml
+	kubectl create -f deployment_secondary.yaml
 	kubectl create -f service.yaml
+	kubectl create -f service_secondary.yaml
 	kubectl get deployments
 	minikube service my-service # Get a local callable url to hit load balanced pods
 

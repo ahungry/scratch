@@ -1,0 +1,17 @@
+# -*- mode: k8s -*-
+
+# https://kubernetes.io/docs/concepts/services-networking/service/
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: secondary-api
+spec:
+  type: LoadBalancer
+  selector:
+    app: secondary-app
+  ports:
+    - protocol: TCP
+      port: 12346
+      targetPort: 8080

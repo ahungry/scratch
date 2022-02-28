@@ -1,0 +1,26 @@
+# -*- mode: k8s -*-
+
+# https://kubernetes.io/docs/tutorials/stateless-application/expose-external-ip-address/
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: secondary-api
+spec:
+  selector:
+    matchLabels:
+      name: secondary-name
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: secondary-app
+        name: secondary-name
+    spec:
+      containers:
+        - name: mi-secondary
+          image: my-secondary
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080

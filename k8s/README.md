@@ -93,3 +93,40 @@ Add to the minikube docker via:
 eval $(minikube docker-env)
 docker build -t my-image .
 ```
+
+# Notes
+
+To make a pod to pod call, it looks like we must expose the pod via a
+service, such as:
+
+```yaml
+# -*- mode: k8s -*-
+
+# https://kubernetes.io/docs/concepts/services-networking/service/
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: secondary-api
+spec:
+  type: LoadBalancer
+  selector:
+    app: secondary-app
+  ports:
+    - protocol: TCP
+      port: 12346
+      targetPort: 8080
+```
+
+Then, to request this API from another pod, it'd be:
+
+```sh
+curl http://secondary-api:12346
+```
+
+Note that the domain is the metadata.name, and the port maps to spec.ports[0].port
+
+This will *only* work if k8s is running a DNS in cluster:
+
+`kubectl get services kube-dns --namespace=kube-system`
