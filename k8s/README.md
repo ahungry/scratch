@@ -96,6 +96,13 @@ docker build -t my-image .
 
 # Notes
 
+## Inner pod connectivity
+
+Just call localhost:port for whatever the actual container is
+listening on.
+
+## Pod to Pod network connectivity
+
 To make a pod to pod call, it looks like we must expose the pod via a
 service, such as:
 
