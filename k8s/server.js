@@ -40,7 +40,7 @@ var handleRequest = async function (request, response) {
   counter++
   console.log('Received request for URL: ' + request.url, { counter })
   response.writeHead(200)
-  response.end(JSON.stringify({ counter, secondary_res, message: 'Hello' }))
+  response.end(JSON.stringify({ v: '1.2.3', counter, secondary_res, message: 'Hello' }))
 }
 
 console.log('listening on 8080')

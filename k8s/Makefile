@@ -56,10 +56,6 @@ kube-deployment:
 expose:
 	kubectl expose deployment blub --type=LoadBalancer --port=8080
 
-service:
-	minikube service --all
-	minikube service my-service
-
 kube-apply-service:
 	kubectl apply -f service.yaml
 
@@ -68,6 +64,19 @@ kube-apply:
 
 forward:
 	kubectl port-forward deployment/blub 12345:8080
+
+get-dns:
+	kubectl get services kube-dns --namespace=kube-system
+
+get-service:
+	minikube service --all
+	minikube service my-service
+
+rollout:
+	eval $$(minikube docker-env); docker build -t my-image .
+	eval $$(minikube docker-env); docker build -f Dockerfile_secondary -t my-secondary .
+	kubectl rollout restart deployment/blub
+	kubectl rollout restart deployment/secondary-api
 
 info:
 	kubectl get pods
