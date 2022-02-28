@@ -30,14 +30,21 @@ pikaur -Sy docker-machine-driver-kvm2
 If on Ubuntu, do this:
 
 ```sh
+# As root
 apt-get install qemu-kvm
 apt-get install libvirt-daemon libvirt-daemon-system libvirt-clients
 apt-get install libvirt-daemon-driver-qemu libvirt-daemon-system-systemd
 systemctl enable libvirtd.service
 systemctl enable virtlogd.service
 apt-get install docker
+
+# As main user
+sudo adduser `id -un` libvirt
+sudo adduser `id -un` kvm
 ```
 
+https://help.ubuntu.com/community/KVM/Installation
+https://minikube.sigs.k8s.io/docs/drivers/kvm2/
 https://minikube.sigs.k8s.io/docs/start/
 
 (some gist script)
