@@ -3,11 +3,13 @@
 # Step 1: make build    (create the properly tagged docker image)
 # Step 2: make start    (boot up minikube env)
 # Step 3: make up       (deployment creation, made up of a pod (replicas settings), of containers)
+
 # -- basically optional/manual ways of doing what we would actually do via yaml files
 # Step 4: make forward  (non-load balanced way to hit a single container in pod)
 # Step 5: make expose   (load balanced way to make a deployment accessible on the external net)
+
+# -- Diagnostic output
 # Step 6: make service  (minikube way to get a callable local IP pointed to the expose)
-# Step 7: make service  (minikube way to get a callable local IP pointed to the expose)
 
 
 build:
@@ -52,7 +54,8 @@ expose:
 	kubectl expose deployment blub --type=LoadBalancer --port=8080
 
 service:
-	minikube service blub
+	minikube service --all
+	minikube service my-service
 
 kube-apply-service:
 	kubectl apply -f service.yaml
