@@ -69,7 +69,7 @@ get-dns:
 	kubectl get services kube-dns --namespace=kube-system
 
 get-service:
-	minikube service --all
+	minikube service list
 	minikube service my-service
 
 rollout:
