@@ -21,6 +21,33 @@ down: kube-down
 stop: kube-stop
 start: kube-start
 
+# https://medium.com/codex/setup-grafana-loki-on-local-k8s-cluster-minikube-90450e9896a8
+install-addons:
+	minikube addons enable ingress
+
+# do this first, as it adds the grafana/loki-stack
+install-grafana:
+	helm repo add grafana 'https://grafana.github.io/helm-charts'
+	helm repo update
+	helm search repo grafana
+	helm upgrade --install grafana --namespace monitoring -f grafana-values.yaml grafana/grafana
+	kubectl get secret --namespace monitoring grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
+	kubectl get svc -A
+	kubectl get ingress -A
+
+install-loki:
+	helm repo add loki 'https://grafana.github.io/loki/charts'
+	helm repo update
+	helm search repo loki
+	-kubectl create namespace monitoring
+	helm upgrade --install loki --namespace=monitoring grafana/loki-stack
+	kubectl get statefulset -A
+	kubectl get daemonset -A
+
+get-grafana-password:
+	kubectl get secret --namespace monitoring grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
+	$(info Add output from 'minikube ip' into /etc/hosts as grafana.minikube - username is 'admin')
+
 kube-start:
 	minikube start --vm-driver=kvm2 \
 	--insecure-registry localhost:5000 \
