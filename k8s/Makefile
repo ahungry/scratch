@@ -47,6 +47,7 @@ install-loki:
 get-grafana-password:
 	kubectl get secret --namespace monitoring grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
 	$(info Add output from 'minikube ip' into /etc/hosts as grafana.minikube - username is 'admin')
+	$(info When going into dashboard, add "Loki" as a datasource with http://loki:3100 in URL)
 
 kube-start:
 	minikube start --vm-driver=kvm2 \
