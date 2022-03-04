@@ -27,6 +27,7 @@ install-addons:
 
 # do this first, as it adds the grafana/loki-stack
 install-grafana:
+	-kubectl create namespace monitoring
 	helm repo add grafana 'https://grafana.github.io/helm-charts'
 	helm repo update
 	helm search repo grafana
@@ -36,13 +37,20 @@ install-grafana:
 	kubectl get ingress -A
 
 install-loki:
+	-kubectl create namespace monitoring
 	helm repo add loki 'https://grafana.github.io/loki/charts'
 	helm repo update
 	helm search repo loki
-	-kubectl create namespace monitoring
 	helm upgrade --install loki --namespace=monitoring grafana/loki-stack
 	kubectl get statefulset -A
 	kubectl get daemonset -A
+
+# https://kubernetes.github.io/ingress-nginx/deploy/
+install-nginx-ingress:
+	minikube addons enable ingress
+	kubectl apply -f example-ingress.yaml
+	kubectl get ingress
+	minikube ip
 
 get-grafana-password:
 	kubectl get secret --namespace monitoring grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
@@ -74,6 +82,7 @@ kube-down:
 	kubectl delete deployments --all
 
 kube-deployment:
+	make build
 	kubectl create -f deployment.yaml
 	kubectl create -f deployment_secondary.yaml
 	kubectl create -f service.yaml
