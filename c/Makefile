@@ -21,3 +21,12 @@ docker-build-cairo:
 docker-run-cairo: docker-build-cairo
 	$(info Use: docker cp alpine_cairo:/tmp/dummy.png ./dummy.png)
 	docker run --name alpine_cairo --rm -it alpine:cairo
+
+replacer.exe: replacer.c
+	x86_64-w64-mingw32-gcc -o $@ $<
+
+replacer.bin: replacer.c
+	gcc -Wall -o $@ $<
+
+test-replacer: replacer.bin
+	echo 'hello world goodbye world blub world the end' | ./replacer.bin /dev/stdin world universe
