@@ -23,4 +23,4 @@ concurrency.beam: concurrency.erl
 	erlc $<
 
 concurrency: concurrency.beam
-	@erl -noshell -s concurrency start -eval 'halt().' -extra $N
+	erl -noshell -s concurrency start -eval 'halt().' -extra $N

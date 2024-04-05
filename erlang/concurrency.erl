@@ -11,8 +11,8 @@
          calc/1,
          start/0
         ]).
--import(io, [format/1]).
--import(init, [get_plain_arguments/0]).
+%% -import(io, [format/1]).
+%% -import(init, [get_plain_arguments/0]).
 
 fact(X) -> fact(X, 1).
 
@@ -26,9 +26,9 @@ calc(N) ->
     [ receive {Pid, R} -> R end || Pid <- Pids ].
 
 start() ->
-    io:format("Hello~n"),
+    io:format("Factorials~n"),
     [N] = init:get_plain_arguments(),
     I = list_to_integer(N),
     Res = calc(I),
     % io:format("~p", [Args]),
-    io:format("~p", [Res]).
+    io:format("~p~n", [Res]).
