@@ -27,7 +27,7 @@ list_comprehensions/0
 -compile([debug_info, export_all]).
 
 start() ->
-  format("Greetings again~n"),
+  format("Greetings again!~n"),
   io:format("Hello World~n").
 
 %% https://learnyousomeerlang.com/starting-out-for-real
