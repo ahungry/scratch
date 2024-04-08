@@ -9,7 +9,8 @@
 
 -export([
          calc/1,
-         start/0
+         start/0,
+         get_url/0
         ]).
 %% -import(io, [format/1]).
 %% -import(init, [get_plain_arguments/0]).
@@ -18,6 +19,19 @@ fact(X) -> fact(X, 1).
 
 fact(0, R) -> R;
 fact(X, R) when X > 0 -> fact(X-1, R*X).
+
+% https://www.erlang.org/doc/man/httpc.html
+% https://elixirforum.com/t/httpc-cheatsheet/50337
+get_url() ->
+% https://stackoverflow.com/questions/1839862/erlang-when-to-perform-inetsstart
+    inets:start(),
+    ssl:start(),
+    Url = "http://httpbin.org/ip",
+    Headers = [{"accept", "application/json"}],
+    % Http_opts = [{ssl, []}],
+    Http_opts = [],
+    {ok, {_, _, Body}} = httpc:request(get, {Url, Headers}, Http_opts, []),
+    Body.
 
 calc(N) ->
     Self = self(),
